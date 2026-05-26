@@ -12,6 +12,12 @@ def api_post(endpoint: str, json: dict, token: str = None):
     response.raise_for_status()
     return response.json()
 
+def api_patch(endpoint: str, params: dict = None, json: dict = None, token: str = None):
+    headers = {"Authorization": f"Bearer {token}"} if token else {}
+    response = requests.patch(f"{BASE_URL}{endpoint}", params=params, json=json, headers=headers)
+    response.raise_for_status()
+    return response.json()
+
 def api_get(endpoint: str, token: str = None):
     headers = {"Authorization": f"Bearer {token}"} if token else {}
     response = requests.get(f"{BASE_URL}{endpoint}", headers=headers)
@@ -102,7 +108,7 @@ elif section == "📦 Purchases (Approve)":
                 st.json(p)
                 if st.button("Approve", key=f"approve_{p['id']}"):
                     try:
-                        api_post(f"/purchases/admin/{p['id']}/status", {"status": "APPROVED"}, token=st.session_state.token)
+                        api_patch(f"/purchases/admin/{p['id']}/status", params={"status": "approved"}, token=st.session_state.token)
                         st.success("Purchase approved and tokens allocated.")
                     except Exception as e:
                         st.error(f"Approval failed: {e}")

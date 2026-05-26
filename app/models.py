@@ -115,6 +115,7 @@ class Product(SQLModel, table=True):
     unit: str # e.g. "Bag", "Ton", "Piece"
     price_per_unit: float = Field(default=0.0) # Product price per unit
     token_points_per_unit: float = Field(default=0.0) # Token points rewarded per unit
+    image_url: Optional[str] = None # Optional product image URL
     is_active: bool = Field(default=True)
 
     product_type: ProductType = Relationship(back_populates="products")

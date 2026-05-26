@@ -36,6 +36,7 @@ class ProductBase(SQLModel):
     unit: str
     price_per_unit: float
     token_points_per_unit: float
+    image_url: Optional[str] = None
     is_active: bool = True
 
 class ProductCreate(ProductBase):
@@ -48,6 +49,7 @@ class ProductUpdate(SQLModel):
     unit: Optional[str] = None
     price_per_unit: Optional[float] = None
     token_points_per_unit: Optional[float] = None
+    image_url: Optional[str] = None
     is_active: Optional[bool] = None
 
 class ProductRead(ProductBase):

@@ -30,10 +30,8 @@ class MaterialTransferResponse(SQLModel):
 from app.models import PurchaseStatus
 
 class PurchaseEntryBase(SQLModel):
-    contractor_id: int
     product_id: int
     quantity_bought: float
-    total_amount: float
     bill_number: Optional[str] = None
 
 class PurchaseEntryCreate(PurchaseEntryBase):
@@ -41,9 +39,11 @@ class PurchaseEntryCreate(PurchaseEntryBase):
 
 class PurchaseEntryRead(PurchaseEntryBase):
     id: int
+    contractor_id: int
     date: datetime
     status: PurchaseStatus
     tokens_earned: int
+    total_amount: float
 
 class PurchaseEntryResponse(SQLModel):
     status: str

@@ -21,18 +21,18 @@ def add_purchase_contractor(
     session: Session = Depends(get_session),
     contractor_user: User = Depends(get_current_contractor)
 ):
-    if purchase_data.contractor_id != contractor_user.id:
-        raise HTTPException(status_code=403, detail="Can only add purchases for yourself")
+
 
     # Verify product
     product = session.get(Product, purchase_data.product_id)
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
 
-    # Tokens are calculated based on token_points_per_unit * quantity
+    # Tokens and Total Amount are calculated based on product details and quantity
     tokens_calculated = int(product.token_points_per_unit * purchase_data.quantity_bought)
+    total_calculated = float(product.price_per_unit * purchase_data.quantity_bought)
     
-    db_purchase = PurchaseEntry.model_validate(purchase_data)
+    db_purchase = PurchaseEntry(**purchase_data.dict(), total_amount=total_calculated, contractor_id=contractor_user.id)
     db_purchase.status = PurchaseStatus.PENDING
     db_purchase.tokens_earned = tokens_calculated  # Record but don't give them yet
     
