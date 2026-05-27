@@ -1,8 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException
+import os
+import shutil
+from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Form
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlmodel import Session, select
 from app.database import engine, create_db_and_tables, get_session
-from app.models import User, UserRole
+from app.models import User, UserRole, MaterialTransfer, PurchaseEntry, RewardRedeem
 from app.schemas.user_schema import (
     UserCreate,
     UserLogin,
@@ -136,6 +139,90 @@ def add_points_to_contractor(
         "message": f"{request.points} points manually added to contractor",
         "user_data": contractor,
     }
+
+@router.get("/admin/contractors/{contractor_id}/detail")
+def get_contractor_detail(
+    contractor_id: int,
+    session: Session = Depends(get_session),
+    admin_user: User = Depends(get_current_admin),
+):
+    contractor = session.get(User, contractor_id)
+    if not contractor or contractor.role != UserRole.CONTRACTOR:
+        raise HTTPException(status_code=404, detail="Contractor not found")
+        
+    # Get transfers
+    transfers = session.exec(select(MaterialTransfer).where(MaterialTransfer.contractor_id == contractor_id)).all()
+    
+    # Get rewards
+    rewards = session.exec(select(RewardRedeem).where(RewardRedeem.contractor_id == contractor_id)).all()
+    
+    # Get purchases
+    purchases = session.exec(select(PurchaseEntry).where(PurchaseEntry.contractor_id == contractor_id)).all()
+    
+    # Create recent activity by combining purchases, transfers, and rewards, sorted by date descending.
+    recent_activity = []
+    
+    for p in purchases:
+        recent_activity.append({
+            "type": "purchase",
+            "id": p.id,
+            "date": p.date,
+            "description": f"Bought product ID {p.product_id} (qty: {p.quantity_bought})",
+            "amount": p.total_amount,
+            "tokens_earned": p.tokens_earned,
+            "status": p.status
+        })
+        
+    for t in transfers:
+        recent_activity.append({
+            "type": "transfer",
+            "id": t.id,
+            "date": t.date,
+            "description": f"Transferred {t.material_type} (qty: {t.quantity} {t.unit})",
+            "amount": 0.0,
+            "tokens_earned": 0,
+            "status": "approved"
+        })
+        
+    for r in rewards:
+        recent_activity.append({
+            "type": "reward_redeem",
+            "id": r.id,
+            "date": r.date,
+            "description": f"Redeemed reward: {r.reward_description}",
+            "amount": 0.0,
+            "tokens_earned": -r.tokens_used,
+            "status": r.status
+        })
+        
+    # Sort recent activity by date descending
+    recent_activity.sort(key=lambda x: x["date"], reverse=True)
+    
+    return {
+        "status": "success",
+        "message": "Contractor details fetched successfully",
+        "data": {
+            "contractor": contractor,
+            "transfers": transfers,
+            "rewards": rewards,
+            "recent_activity": recent_activity
+        }
+    }
+
+@router.patch("/profile/update", response_model=UserResponse)
+def update_profile(
+    user_data: UserUpdate,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    new_data = user_data.model_dump(exclude_unset=True)
+    for key, value in new_data.items():
+        setattr(current_user, key, value)
+
+    session.add(current_user)
+    session.commit()
+    session.refresh(current_user)
+    return {"status": "success", "message": "Profile updated successfully", "user_data": current_user}
 
 @router.get("/me", response_model=UserResponse)
 def get_my_profile(current_user: User = Depends(get_current_user)):

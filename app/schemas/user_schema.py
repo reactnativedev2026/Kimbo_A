@@ -13,6 +13,8 @@ class UserBase(SQLModel):
     address: Optional[str] = None
     gst_details: Optional[str] = None
     status: UserStatus = Field(default=UserStatus.ACTIVE)
+    profile_image: Optional[str] = None
+    govt_id: Optional[str] = None
 
 class UserCreate(UserBase):
     password: str = Field(min_length=6)
@@ -27,6 +29,8 @@ class UserUpdate(SQLModel):
     address: Optional[str] = None
     gst_details: Optional[str] = None
     status: Optional[UserStatus] = None
+    profile_image: Optional[str] = None
+    govt_id: Optional[str] = None
 
 class UserResponse(SQLModel):
     status: str

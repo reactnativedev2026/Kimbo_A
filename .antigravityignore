@@ -1,0 +1,62 @@
+# Dependencies
+node_modules/
+ios/Pods/
+android/.gradle/
+android/build/
+android/app/build/
+ios/build/
+
+# Expo / Metro
+.expo/
+.metro/
+dist/
+build/
+coverage/
+
+# Cache
+.cache/
+tmp/
+temp/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# Maps & bundles
+*.map
+*.bundle
+
+# Media
+*.mp4
+*.mov
+*.zip
+*.rar
+
+# Generated files
+*.apk
+*.aab
+
+# Git
+.git/
+
+# Secrets
+.env
+.env.*
+google-services.json
+GoogleService-Info.plist
+*.keystore
+*.jks
+
+# Old code
+backup/
+old/
+legacy/
+
+# Docs
+docs/
+*.md
+
+# Large assets
+assets/videos/
+assets/raw/

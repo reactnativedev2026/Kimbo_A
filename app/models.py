@@ -28,6 +28,9 @@ class User(SQLModel, table=True):
     gst_details: Optional[str] = None
     status: UserStatus = Field(default=UserStatus.ACTIVE)
     
+    profile_image: Optional[str] = Field(default=None)
+    govt_id: Optional[str] = Field(default=None)
+    
     total_tokens: int = Field(default=0)
 
     # Relationships
