@@ -5,7 +5,7 @@ from fastapi.responses import HTMLResponse
 from sqlmodel import Session 
 
 from app.database import engine, create_db_and_tables
-from app.api import images, users, transfers, purchases, schemes, rewards, dashboard, products
+from app.api import images, users, transfers, purchases, schemes, rewards, dashboard, products, common
 
 app = FastAPI(
     title="Kimbo AI API",
@@ -15,9 +15,38 @@ app = FastAPI(
 
 app.mount("/static", StaticFiles(directory="uploads"), name="static")
 
+def seed_static_content():
+    from sqlmodel import Session, select
+    from app.models import StaticContent
+    
+    defaults = {
+        "privacy_policy": {
+            "title": "Privacy Policy",
+            "content": "This is the default Privacy Policy for Kimbo AI. Please modify this in the admin panel."
+        },
+        "terms_conditions": {
+            "title": "Terms and Conditions",
+            "content": "This is the default Terms and Conditions for Kimbo AI. Please modify this in the admin panel."
+        }
+    }
+    
+    with Session(engine) as session:
+        for key, info in defaults.items():
+            statement = select(StaticContent).where(StaticContent.key == key)
+            db_content = session.exec(statement).first()
+            if not db_content:
+                db_content = StaticContent(
+                    key=key,
+                    title=info["title"],
+                    content=info["content"]
+                )
+                session.add(db_content)
+        session.commit()
+
 @app.on_event("startup")
 def on_startup():
     create_db_and_tables()
+    seed_static_content()
     
 def get_session():
     with Session(engine) as session:
@@ -32,6 +61,7 @@ app.include_router(schemes.router, prefix="/schemes", tags=["Schemes"])
 app.include_router(rewards.router, prefix="/rewards", tags=["Rewards"])
 app.include_router(dashboard.router, prefix="/dashboard", tags=["Dashboard"])
 app.include_router(products.router, prefix="/products", tags=["Products"])
+app.include_router(common.router, prefix="/common", tags=["Common"])
 
 @app.get("/", response_class=HTMLResponse, tags=["Main"])
 def read_root():

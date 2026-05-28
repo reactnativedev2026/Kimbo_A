@@ -122,3 +122,26 @@ class Product(SQLModel, table=True):
     is_active: bool = Field(default=True)
 
     product_type: ProductType = Relationship(back_populates="products")
+
+class StaticContent(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    key: str = Field(unique=True, index=True) # e.g. 'privacy_policy', 'terms_conditions', 'about_us'
+    title: str
+    content: str
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+class SupportStatus(str, Enum):
+    PENDING = "pending"
+    IN_PROGRESS = "in_progress"
+    RESOLVED = "resolved"
+
+class SupportTicket(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: Optional[int] = Field(default=None, foreign_key="user.id")
+    name: str
+    email: str
+    phone: Optional[str] = None
+    subject: str
+    message: str
+    status: SupportStatus = Field(default=SupportStatus.PENDING)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
