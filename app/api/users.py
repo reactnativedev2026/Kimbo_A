@@ -63,9 +63,17 @@ def get_current_contractor(current_user: User = Depends(get_current_user)) -> Us
 def register_admin(user_input: UserCreate, session: Session = Depends(get_session)):
     db_user = User.model_validate(user_input)
     db_user.role = UserRole.ADMIN  # Force role to ADMIN
+    
+    # Check if email is already registered
     existing_user = session.exec(select(User).where(User.email == user_input.email)).first()
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
+        
+    # Check if username is already registered
+    existing_username = session.exec(select(User).where(User.username == user_input.username)).first()
+    if existing_username:
+        raise HTTPException(status_code=400, detail="Username already registered")
+        
     db_user.password = get_password_hash(user_input.password)
     session.add(db_user)
     session.commit()
@@ -80,9 +88,17 @@ def add_contractor(
 ):
     db_user = User.model_validate(user_input)
     db_user.role = UserRole.CONTRACTOR
+    
+    # Check if email is already registered
     existing_user = session.exec(select(User).where(User.email == user_input.email)).first()
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
+        
+    # Check if username is already registered
+    existing_username = session.exec(select(User).where(User.username == user_input.username)).first()
+    if existing_username:
+        raise HTTPException(status_code=400, detail="Username already registered")
+        
     db_user.password = get_password_hash(user_input.password)
     session.add(db_user)
     session.commit()
