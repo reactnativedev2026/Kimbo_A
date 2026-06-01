@@ -1,9 +1,10 @@
+import os
 import streamlit as st
 import requests
 from typing import List, Dict
 
 # Base URL of the FastAPI backend (adjust if needed)
-BASE_URL = "http://127.0.0.1:8000"
+BASE_URL = os.getenv("API_BASE_URL", "https://sbbms-new.onrender.com")
 
 # ---------- Helper functions ----------
 def api_post(endpoint: str, json: dict, token: str = None):

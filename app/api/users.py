@@ -104,7 +104,10 @@ def login_user(login_data: UserLogin, session: Session = Depends(get_session)):
 
 # -------------------- User Management --------------------
 @router.get("/list", response_model=UserListResponse)
-def list_users(session: Session = Depends(get_session)):
+def list_users(
+    session: Session = Depends(get_session),
+    admin_user: User = Depends(get_current_admin),
+):
     users = session.exec(select(User)).all()
     return {"status": "success", "message": "User list fetched successfully", "user_data": users}
 

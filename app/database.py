@@ -12,6 +12,10 @@ sqlite_url = f"sqlite:///{sqlite_file_name}"
 
 database_url = os.getenv("DATABASE_URL", sqlite_url)
 
+# Print masked database URL for debugging
+masked_url = database_url.split("@")[-1] if "@" in database_url else database_url
+print(f"\n--- [DB INFO] Connecting to: {masked_url} ---\n")
+
 # SQLAlchemy 1.4+ deprecated postgres:// prefix in favor of postgresql://
 if database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
