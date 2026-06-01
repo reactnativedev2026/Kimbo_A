@@ -4,6 +4,8 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Form
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlmodel import Session, select
+from pydantic import BaseModel
+
 from app.database import engine, create_db_and_tables, get_session
 from app.models import User, UserRole, MaterialTransfer, PurchaseEntry, RewardRedeem
 from app.schemas.user_schema import (
@@ -119,7 +121,14 @@ def list_contractors(
     contractors = session.exec(select(User).where(User.role == UserRole.CONTRACTOR)).all()
     return {"status": "success", "message": "Contractors list fetched successfully", "user_data": contractors}
 
-from pydantic import BaseModel
+@router.get("/admin/admins", response_model=UserListResponse)
+def list_admins(
+    session: Session = Depends(get_session),
+    admin_user: User = Depends(get_current_admin),
+):
+    admins = session.exec(select(User).where(User.role == UserRole.ADMIN)).all()
+    return {"status": "success", "message": "Admins list fetched successfully", "user_data": admins}
+
 class AddPointsRequest(BaseModel):
     points: int
 

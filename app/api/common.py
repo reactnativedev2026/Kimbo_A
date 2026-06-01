@@ -5,10 +5,11 @@ from typing import List, Optional
 from datetime import datetime
 
 from app.database import engine
-from app.models import StaticContent, SupportTicket, User, UserRole, SupportStatus
+from app.models import StaticContent, SupportTicket, User, UserRole, SupportStatus, FAQ
 from app.schemas.common_schema import (
     StaticContentCreate, StaticContentUpdate, StaticContentRead, StaticContentResponse,
-    SupportTicketCreate, SupportTicketRead, SupportTicketStatusUpdate, SupportTicketResponse
+    SupportTicketCreate, SupportTicketRead, SupportTicketStatusUpdate, SupportTicketResponse,
+    FAQCreate, FAQUpdate, FAQRead, FAQResponse, FAQListResponse
 )
 from app.api.users import get_current_user
 
@@ -262,4 +263,119 @@ def update_support_ticket_status(
         "status": "success",
         "message": f"Support ticket status updated to {payload.status}",
         "data": db_ticket
+    }
+
+# ----------------- FAQ ENDPOINTS -----------------
+
+@router.post("/faqs", response_model=FAQResponse, tags=["FAQs"])
+def create_faq(
+    payload: FAQCreate,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Create a new FAQ (Admin only).
+    """
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Only admins can create FAQs.")
+        
+    db_faq = FAQ.model_validate(payload)
+    session.add(db_faq)
+    session.commit()
+    session.refresh(db_faq)
+    return {
+        "status": "success",
+        "message": "FAQ created successfully",
+        "data": db_faq
+    }
+
+@router.get("/faqs", response_model=FAQListResponse, tags=["FAQs"])
+def get_faqs(
+    active_only: bool = True,
+    session: Session = Depends(get_session)
+):
+    """
+    Get all FAQs (Public). By default, returns only active FAQs.
+    """
+    statement = select(FAQ)
+    if active_only:
+        statement = statement.where(FAQ.is_active == True)
+    
+    statement = statement.order_by(FAQ.created_at.desc())
+    faqs = session.exec(statement).all()
+    return {
+        "status": "success",
+        "message": "FAQs retrieved successfully",
+        "data": faqs
+    }
+
+@router.get("/faqs/{faq_id}", response_model=FAQResponse, tags=["FAQs"])
+def get_faq(
+    faq_id: int,
+    session: Session = Depends(get_session)
+):
+    """
+    Get a single FAQ by ID (Public).
+    """
+    db_faq = session.get(FAQ, faq_id)
+    if not db_faq:
+        raise HTTPException(status_code=404, detail="FAQ not found")
+    return {
+        "status": "success",
+        "message": "FAQ retrieved successfully",
+        "data": db_faq
+    }
+
+@router.patch("/faqs/{faq_id}", response_model=FAQResponse, tags=["FAQs"])
+def update_faq(
+    faq_id: int,
+    payload: FAQUpdate,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Update an FAQ (Admin only).
+    """
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Only admins can update FAQs.")
+        
+    db_faq = session.get(FAQ, faq_id)
+    if not db_faq:
+        raise HTTPException(status_code=404, detail="FAQ not found")
+        
+    update_data = payload.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(db_faq, key, value)
+        
+    session.add(db_faq)
+    session.commit()
+    session.refresh(db_faq)
+    return {
+        "status": "success",
+        "message": "FAQ updated successfully",
+        "data": db_faq
+    }
+
+@router.delete("/faqs/{faq_id}", tags=["FAQs"])
+def delete_faq(
+    faq_id: int,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Delete an FAQ (Admin only).
+    """
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Only admins can delete FAQs.")
+        
+    db_faq = session.get(FAQ, faq_id)
+    if not db_faq:
+        raise HTTPException(status_code=404, detail="FAQ not found")
+        
+    session.delete(db_faq)
+    session.commit()
+    return {
+        "status": "success",
+        "message": "FAQ deleted successfully",
+        "deleted_id": faq_id
     }

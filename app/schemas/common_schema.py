@@ -53,3 +53,31 @@ class SupportTicketResponse(SQLModel):
     status: str
     message: str
     data: SupportTicketRead
+
+# FAQ Schemas
+class FAQCreate(SQLModel):
+    question: str
+    answer: str
+    is_active: Optional[bool] = True
+
+class FAQUpdate(SQLModel):
+    question: Optional[str] = None
+    answer: Optional[str] = None
+    is_active: Optional[bool] = None
+
+class FAQRead(SQLModel):
+    id: int
+    question: str
+    answer: str
+    is_active: bool
+    created_at: datetime
+
+class FAQResponse(SQLModel):
+    status: str
+    message: str
+    data: FAQRead
+
+class FAQListResponse(SQLModel):
+    status: str
+    message: str
+    data: list[FAQRead]

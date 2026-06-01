@@ -145,3 +145,10 @@ class SupportTicket(SQLModel, table=True):
     message: str
     status: SupportStatus = Field(default=SupportStatus.PENDING)
     created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class FAQ(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    question: str = Field(index=True)
+    answer: str
+    is_active: bool = Field(default=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
