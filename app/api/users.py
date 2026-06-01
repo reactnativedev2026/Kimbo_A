@@ -74,6 +74,12 @@ def register_admin(user_input: UserCreate, session: Session = Depends(get_sessio
     if existing_username:
         raise HTTPException(status_code=400, detail="Username already registered")
         
+    # Check if contractor_code is already registered
+    if user_input.contractor_code is not None:
+        existing_code = session.exec(select(User).where(User.contractor_code == user_input.contractor_code)).first()
+        if existing_code:
+            raise HTTPException(status_code=400, detail="Contractor code already registered")
+        
     db_user.password = get_password_hash(user_input.password)
     session.add(db_user)
     session.commit()
@@ -98,6 +104,12 @@ def add_contractor(
     existing_username = session.exec(select(User).where(User.username == user_input.username)).first()
     if existing_username:
         raise HTTPException(status_code=400, detail="Username already registered")
+        
+    # Check if contractor_code is already registered
+    if user_input.contractor_code is not None:
+        existing_code = session.exec(select(User).where(User.contractor_code == user_input.contractor_code)).first()
+        if existing_code:
+            raise HTTPException(status_code=400, detail="Contractor code already registered")
         
     db_user.password = get_password_hash(user_input.password)
     session.add(db_user)
