@@ -79,6 +79,8 @@ class PurchaseEntry(SQLModel, table=True):
     
     status: PurchaseStatus = Field(default=PurchaseStatus.PENDING)
     tokens_earned: int = Field(default=0)
+    payment_method: Optional[str] = Field(default=None, nullable=True)
+    transaction_id: Optional[str] = Field(default=None, nullable=True)
 
     created_at: datetime = Field(default_factory=datetime.utcnow, sa_column=Column(DateTime, default=datetime.utcnow))
     updated_at: datetime = Field(default_factory=datetime.utcnow, sa_column=Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow))

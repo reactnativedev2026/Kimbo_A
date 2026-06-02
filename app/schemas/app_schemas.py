@@ -46,6 +46,8 @@ class PurchaseEntryRead(PurchaseEntryBase):
     status: PurchaseStatus
     tokens_earned: int
     total_amount: float
+    payment_method: Optional[str] = None
+    transaction_id: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 
@@ -53,6 +55,7 @@ class PurchaseEntryResponse(SQLModel):
     status: str
     message: str
     data: PurchaseEntryRead
+    bill_html: Optional[str] = None
 
 # Scheme Schemas
 class SchemeBase(SQLModel):
