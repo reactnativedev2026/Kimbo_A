@@ -46,10 +46,11 @@ def get_product_types(
     current_user: User = Depends(get_current_user) # Anyone can view active types
 ):
     types = session.exec(select(ProductType).where(ProductType.is_active == True)).all()
+    type_reads = [ProductTypeRead.model_validate(t) if hasattr(ProductTypeRead, 'model_validate') else ProductTypeRead.from_orm(t) for t in types]
     return {
         "status": "success",
         "message": "Product types fetched",
-        "data": types
+        "data": type_reads
     }
 
 @router.patch("/types/{type_id}", response_model=ProductTypeResponse)
@@ -112,6 +113,9 @@ def add_product(
         raise HTTPException(status_code=404, detail="Product type not found")
 
     db_product = Product.model_validate(product_data)
+    # Assign the unit from the category (ProductType)
+    db_product.unit = p_type.unit
+    
     session.add(db_product)
     session.commit()
     session.refresh(db_product)
@@ -128,10 +132,11 @@ def get_products(
     current_user: User = Depends(get_current_user) # Anyone can view products
 ):
     products = session.exec(select(Product).where(Product.is_active == True)).all()
+    product_reads = [ProductRead.model_validate(p) if hasattr(ProductRead, 'model_validate') else ProductRead.from_orm(p) for p in products]
     return {
         "status": "success",
         "message": "Products fetched",
-        "data": products
+        "data": product_reads
     }
 
 @router.get("/by-type/{type_id}", response_model=ProductListResponse)
@@ -141,10 +146,11 @@ def get_products_by_type(
     current_user: User = Depends(get_current_user)
 ):
     products = session.exec(select(Product).where(Product.product_type_id == type_id, Product.is_active == True)).all()
+    product_reads = [ProductRead.model_validate(p) if hasattr(ProductRead, 'model_validate') else ProductRead.from_orm(p) for p in products]
     return {
         "status": "success",
         "message": f"Products for type {type_id} fetched",
-        "data": products
+        "data": product_reads
     }
 
 @router.patch("/{product_id}", response_model=ProductResponse)
@@ -162,9 +168,15 @@ def update_product(
     for key, value in update_data.items():
         setattr(db_product, key, value)
         
+    # Re-sync unit from the product type (category)
+    p_type = session.get(ProductType, db_product.product_type_id)
+    if p_type:
+        db_product.unit = p_type.unit
+        
     session.add(db_product)
     session.commit()
     session.refresh(db_product)
+
     
     return {
         "status": "success",

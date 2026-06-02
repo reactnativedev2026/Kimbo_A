@@ -108,3 +108,21 @@ class ContractorDashboardStats(SQLModel):
     total_tokens: int
     total_purchases: int
     pending_redeems: int
+
+# Earning History Schemas
+class EarningHistoryItem(SQLModel):
+    id: int
+    type: str  # "purchase" or "admin"
+    points: int
+    date: datetime
+    description: str
+    ref_id: Optional[int] = None
+    bill_number: Optional[str] = None
+    product_name: Optional[str] = None
+
+class EarningHistoryResponse(SQLModel):
+    status: str
+    message: str
+    total_earned: int
+    data: List[EarningHistoryItem]
+

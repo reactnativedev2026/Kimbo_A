@@ -122,6 +122,7 @@ class ProductType(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str = Field(unique=True)
     description: Optional[str] = None
+    unit: str = Field(default="Piece")
     is_active: bool = Field(default=True)
 
     created_at: datetime = Field(default_factory=datetime.utcnow, sa_column=Column(DateTime, default=datetime.utcnow))
@@ -134,9 +135,10 @@ class Product(SQLModel, table=True):
     name: str
     description: Optional[str] = None
     product_type_id: int = Field(foreign_key="producttype.id")
-    unit: str # e.g. "Bag", "Ton", "Piece"
+    unit: str = Field(default="Piece") # e.g. "Bag", "Ton", "Piece"
     price_per_unit: float = Field(default=0.0) # Product price per unit
     token_points_per_unit: float = Field(default=0.0) # Token points rewarded per unit
+
     image_url: Optional[str] = None # Optional product image URL
     is_active: bool = Field(default=True)
 
@@ -180,3 +182,20 @@ class FAQ(SQLModel, table=True):
     
     created_at: datetime = Field(default_factory=datetime.utcnow, sa_column=Column(DateTime, default=datetime.utcnow))
     updated_at: datetime = Field(default_factory=datetime.utcnow, sa_column=Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow))
+
+class AdminPointAdjustment(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    contractor_id: int = Field(foreign_key="user.id")
+    points: int
+    notes: Optional[str] = Field(default=None)
+    created_at: datetime = Field(default_factory=datetime.utcnow, sa_column=Column(DateTime, default=datetime.utcnow))
+
+class Notification(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="user.id")
+    title: str
+    message: str
+    is_read: bool = Field(default=False)
+    created_at: datetime = Field(default_factory=datetime.utcnow, sa_column=Column(DateTime, default=datetime.utcnow))
+
+

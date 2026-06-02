@@ -7,7 +7,7 @@ from sqlmodel import Session, select
 from pydantic import BaseModel
 
 from app.database import engine, create_db_and_tables, get_session
-from app.models import User, UserRole, MaterialTransfer, PurchaseEntry, RewardRedeem
+from app.models import User, UserRole, MaterialTransfer, PurchaseEntry, RewardRedeem, AdminPointAdjustment, Product, PurchaseStatus
 from app.schemas.user_schema import (
     UserCreate,
     UserLogin,
@@ -17,6 +17,8 @@ from app.schemas.user_schema import (
     DeleteResponse,
     UserUpdate,
 )
+from app.schemas.app_schemas import EarningHistoryResponse, EarningHistoryItem
+
 from app.utils.security import (
     get_password_hash,
     verify_password,
@@ -159,6 +161,7 @@ def list_admins(
 
 class AddPointsRequest(BaseModel):
     points: int
+    notes: Optional[str] = None
 
 @router.post("/admin/contractors/{contractor_id}/add-points", response_model=UserResponse)
 def add_points_to_contractor(
@@ -171,7 +174,17 @@ def add_points_to_contractor(
     if not contractor or contractor.role != UserRole.CONTRACTOR:
         raise HTTPException(status_code=404, detail="Contractor not found")
     contractor.total_tokens += request.points
+    # Log the point adjustment
+    adjustment = AdminPointAdjustment(
+        contractor_id=contractor_id,
+        points=request.points,
+        notes=request.notes
+    )
     session.add(contractor)
+    session.add(adjustment)
+    # Send notification to contractor
+    from app.utils.notifications import create_notification
+    create_notification(session, contractor_id, "Points Added", f"{request.points} points added by admin. {request.notes or ''}")
     session.commit()
     session.refresh(contractor)
     return {
@@ -179,6 +192,7 @@ def add_points_to_contractor(
         "message": f"{request.points} points manually added to contractor",
         "user_data": contractor,
     }
+
 
 @router.get("/admin/contractors/{contractor_id}/detail")
 def get_contractor_detail(
@@ -300,3 +314,75 @@ def delete_user(user_id: int, session: Session = Depends(get_session)):
     session.delete(db_user)
     session.commit()
     return {"status": "success", "message": f"User with ID {user_id} has been deleted successfully", "deleted_id": user_id}
+
+# -------------------- Earning Point History --------------------
+def get_contractor_earning_history(contractor_id: int, session: Session):
+    # 1. Fetch approved purchases along with product details
+    purchases_q = select(PurchaseEntry, Product).join(
+        Product, PurchaseEntry.product_id == Product.id
+    ).where(
+        PurchaseEntry.contractor_id == contractor_id,
+        PurchaseEntry.status == PurchaseStatus.APPROVED
+    )
+    purchases = session.exec(purchases_q).all()
+    
+    # 2. Fetch admin manual point adjustments
+    adjustments = session.exec(
+        select(AdminPointAdjustment).where(AdminPointAdjustment.contractor_id == contractor_id)
+    ).all()
+    
+    history_items = []
+    total_earned = 0
+    
+    for purchase, product in purchases:
+        history_items.append(EarningHistoryItem(
+            id=purchase.id,
+            type="purchase",
+            points=purchase.tokens_earned,
+            date=purchase.date,
+            description=f"Points earned from purchase of {product.name}",
+            ref_id=purchase.id,
+            bill_number=purchase.bill_number,
+            product_name=product.name
+        ))
+        total_earned += purchase.tokens_earned
+        
+    for adj in adjustments:
+        history_items.append(EarningHistoryItem(
+            id=adj.id,
+            type="admin",
+            points=adj.points,
+            date=adj.created_at,
+            description=adj.notes or "Manually added by Admin",
+            ref_id=adj.id
+        ))
+        if adj.points > 0:
+            total_earned += adj.points
+
+    # Sort history items by date descending
+    history_items.sort(key=lambda x: x.date, reverse=True)
+    
+    return {
+        "status": "success",
+        "message": "Earning point history fetched successfully",
+        "total_earned": total_earned,
+        "data": history_items
+    }
+
+@router.get("/me/earning-history", response_model=EarningHistoryResponse)
+def get_my_earning_history(
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_contractor),
+):
+    return get_contractor_earning_history(current_user.id, session)
+
+@router.get("/admin/contractors/{contractor_id}/earning-history", response_model=EarningHistoryResponse)
+def get_contractor_earning_history_admin(
+    contractor_id: int,
+    session: Session = Depends(get_session),
+    admin_user: User = Depends(get_current_admin),
+):
+    contractor = session.get(User, contractor_id)
+    if not contractor or contractor.role != UserRole.CONTRACTOR:
+        raise HTTPException(status_code=404, detail="Contractor not found")
+    return get_contractor_earning_history(contractor_id, session)

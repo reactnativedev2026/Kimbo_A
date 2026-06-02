@@ -5,7 +5,7 @@ from fastapi.responses import HTMLResponse
 from sqlmodel import Session 
 
 from app.database import engine, create_db_and_tables
-from app.api import images, users, transfers, purchases, schemes, rewards, dashboard, products, common
+from app.api import images, users, transfers, purchases, schemes, rewards, dashboard, products, common, notifications
 
 app = FastAPI(
     title="Kimbo AI API",
@@ -62,6 +62,7 @@ app.include_router(rewards.router, prefix="/rewards", tags=["Rewards"])
 app.include_router(dashboard.router, prefix="/dashboard", tags=["Dashboard"])
 app.include_router(products.router, prefix="/products", tags=["Products"])
 app.include_router(common.router, prefix="/common", tags=["Common"])
+app.include_router(notifications.router, prefix="/notifications", tags=["notifications"])
 
 @app.get("/", response_class=HTMLResponse, tags=["Main"])
 def read_root():

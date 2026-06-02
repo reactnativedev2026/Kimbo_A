@@ -6,6 +6,7 @@ from datetime import datetime
 class ProductTypeBase(SQLModel):
     name: str
     description: Optional[str] = None
+    unit: str = "Piece"
     is_active: bool = True
 
 class ProductTypeCreate(ProductTypeBase):
@@ -14,6 +15,7 @@ class ProductTypeCreate(ProductTypeBase):
 class ProductTypeUpdate(SQLModel):
     name: Optional[str] = None
     description: Optional[str] = None
+    unit: Optional[str] = None
     is_active: Optional[bool] = None
 
 class ProductTypeRead(ProductTypeBase):
@@ -36,7 +38,7 @@ class ProductBase(SQLModel):
     name: str
     description: Optional[str] = None
     product_type_id: int
-    unit: str
+    unit: Optional[str] = None
     price_per_unit: float
     token_points_per_unit: float
     image_url: Optional[str] = None
@@ -58,6 +60,7 @@ class ProductUpdate(SQLModel):
 class ProductRead(ProductBase):
     id: int
     product_type: Optional[ProductTypeRead] = None
+
     created_at: datetime
     updated_at: datetime
 

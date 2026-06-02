@@ -80,13 +80,18 @@ def update_purchase_status(
         raise HTTPException(status_code=400, detail="Purchase is already approved.")
 
     db_purchase.status = status
-    
+    # Notify the contractor about status change
+    from app.utils.notifications import create_notification
+    contractor = session.get(User, db_purchase.contractor_id)
     if status == PurchaseStatus.APPROVED:
         # Give tokens to the contractor
-        contractor = session.get(User, db_purchase.contractor_id)
         if contractor:
             contractor.total_tokens += db_purchase.tokens_earned
             session.add(contractor)
+        create_notification(session, contractor.id, "Purchase Approved", f"Your purchase ID {db_purchase.id} has been approved. Tokens credited.")
+    else:
+        if contractor:
+            create_notification(session, contractor.id, "Purchase Status Updated", f"Your purchase ID {db_purchase.id} status changed to {status}.")
 
     session.add(db_purchase)
     session.commit()
