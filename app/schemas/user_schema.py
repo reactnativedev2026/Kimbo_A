@@ -1,5 +1,6 @@
 from sqlmodel import SQLModel, Field
 from typing import Optional
+from datetime import datetime
 from pydantic import EmailStr       
 from app.models import UserRole, UserStatus
 
@@ -22,6 +23,8 @@ class UserCreate(UserBase):
 class UserRead(UserBase):
     id: int
     total_tokens: int
+    created_at: datetime
+    updated_at: datetime
 
 class UserUpdate(SQLModel):
     full_name: Optional[str] = None

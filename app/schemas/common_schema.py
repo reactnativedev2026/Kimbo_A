@@ -18,6 +18,7 @@ class StaticContentRead(SQLModel):
     key: str
     title: str
     content: str
+    created_at: datetime
     updated_at: datetime
 
 class StaticContentResponse(SQLModel):
@@ -45,6 +46,7 @@ class SupportTicketRead(SQLModel):
     message: str
     status: SupportStatus
     created_at: datetime
+    updated_at: datetime
 
 class SupportTicketStatusUpdate(SQLModel):
     status: SupportStatus
@@ -71,6 +73,7 @@ class FAQRead(SQLModel):
     answer: str
     is_active: bool
     created_at: datetime
+    updated_at: datetime
 
 class FAQResponse(SQLModel):
     status: str

@@ -2,6 +2,7 @@ from sqlmodel import SQLModel, Field, Relationship
 from typing import Optional, List
 from datetime import datetime
 from enum import Enum
+from sqlalchemy import Column, DateTime
 
 class UserRole(str, Enum):
     ADMIN = "admin"
@@ -32,6 +33,9 @@ class User(SQLModel, table=True):
     govt_id: Optional[str] = Field(default=None)
     
     total_tokens: int = Field(default=0)
+    
+    created_at: datetime = Field(default_factory=datetime.utcnow, sa_column=Column(DateTime, default=datetime.utcnow))
+    updated_at: datetime = Field(default_factory=datetime.utcnow, sa_column=Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow))
 
     # Relationships
     material_transfers: List["MaterialTransfer"] = Relationship(back_populates="contractor")
@@ -50,6 +54,9 @@ class MaterialTransfer(SQLModel, table=True):
     vehicle_number: Optional[str] = None
     driver_details: Optional[str] = None
     notes: Optional[str] = None
+
+    created_at: datetime = Field(default_factory=datetime.utcnow, sa_column=Column(DateTime, default=datetime.utcnow))
+    updated_at: datetime = Field(default_factory=datetime.utcnow, sa_column=Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow))
 
     contractor: User = Relationship(back_populates="material_transfers")
 
@@ -73,6 +80,9 @@ class PurchaseEntry(SQLModel, table=True):
     status: PurchaseStatus = Field(default=PurchaseStatus.PENDING)
     tokens_earned: int = Field(default=0)
 
+    created_at: datetime = Field(default_factory=datetime.utcnow, sa_column=Column(DateTime, default=datetime.utcnow))
+    updated_at: datetime = Field(default_factory=datetime.utcnow, sa_column=Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow))
+
     contractor: User = Relationship(back_populates="purchase_entries")
     product: "Product" = Relationship()
 
@@ -85,6 +95,9 @@ class Scheme(SQLModel, table=True):
     end_date: datetime
     banner_image: Optional[str] = None
     is_active: bool = Field(default=True)
+
+    created_at: datetime = Field(default_factory=datetime.utcnow, sa_column=Column(DateTime, default=datetime.utcnow))
+    updated_at: datetime = Field(default_factory=datetime.utcnow, sa_column=Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow))
 
 
 class RedeemStatus(str, Enum):
@@ -100,6 +113,9 @@ class RewardRedeem(SQLModel, table=True):
     reward_description: str
     status: RedeemStatus = Field(default=RedeemStatus.PENDING)
 
+    created_at: datetime = Field(default_factory=datetime.utcnow, sa_column=Column(DateTime, default=datetime.utcnow))
+    updated_at: datetime = Field(default_factory=datetime.utcnow, sa_column=Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow))
+
     contractor: User = Relationship(back_populates="reward_requests")
 
 class ProductType(SQLModel, table=True):
@@ -107,6 +123,9 @@ class ProductType(SQLModel, table=True):
     name: str = Field(unique=True)
     description: Optional[str] = None
     is_active: bool = Field(default=True)
+
+    created_at: datetime = Field(default_factory=datetime.utcnow, sa_column=Column(DateTime, default=datetime.utcnow))
+    updated_at: datetime = Field(default_factory=datetime.utcnow, sa_column=Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow))
 
     products: List["Product"] = Relationship(back_populates="product_type")
 
@@ -121,6 +140,9 @@ class Product(SQLModel, table=True):
     image_url: Optional[str] = None # Optional product image URL
     is_active: bool = Field(default=True)
 
+    created_at: datetime = Field(default_factory=datetime.utcnow, sa_column=Column(DateTime, default=datetime.utcnow))
+    updated_at: datetime = Field(default_factory=datetime.utcnow, sa_column=Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow))
+
     product_type: ProductType = Relationship(back_populates="products")
 
 class StaticContent(SQLModel, table=True):
@@ -128,7 +150,9 @@ class StaticContent(SQLModel, table=True):
     key: str = Field(unique=True, index=True) # e.g. 'privacy_policy', 'terms_conditions', 'about_us'
     title: str
     content: str
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    
+    created_at: datetime = Field(default_factory=datetime.utcnow, sa_column=Column(DateTime, default=datetime.utcnow))
+    updated_at: datetime = Field(default_factory=datetime.utcnow, sa_column=Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow))
 
 class SupportStatus(str, Enum):
     PENDING = "pending"
@@ -144,11 +168,15 @@ class SupportTicket(SQLModel, table=True):
     subject: str
     message: str
     status: SupportStatus = Field(default=SupportStatus.PENDING)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    
+    created_at: datetime = Field(default_factory=datetime.utcnow, sa_column=Column(DateTime, default=datetime.utcnow))
+    updated_at: datetime = Field(default_factory=datetime.utcnow, sa_column=Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow))
 
 class FAQ(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     question: str = Field(index=True)
     answer: str
     is_active: bool = Field(default=True)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    
+    created_at: datetime = Field(default_factory=datetime.utcnow, sa_column=Column(DateTime, default=datetime.utcnow))
+    updated_at: datetime = Field(default_factory=datetime.utcnow, sa_column=Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow))

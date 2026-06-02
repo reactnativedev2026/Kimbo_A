@@ -1,5 +1,6 @@
 from sqlmodel import SQLModel
 from typing import Optional, List
+from datetime import datetime
 
 # Product Type Schemas
 class ProductTypeBase(SQLModel):
@@ -17,6 +18,8 @@ class ProductTypeUpdate(SQLModel):
 
 class ProductTypeRead(ProductTypeBase):
     id: int
+    created_at: datetime
+    updated_at: datetime
 
 class ProductTypeResponse(SQLModel):
     status: str
@@ -55,6 +58,8 @@ class ProductUpdate(SQLModel):
 class ProductRead(ProductBase):
     id: int
     product_type: Optional[ProductTypeRead] = None
+    created_at: datetime
+    updated_at: datetime
 
 class ProductResponse(SQLModel):
     status: str

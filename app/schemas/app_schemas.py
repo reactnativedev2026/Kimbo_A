@@ -20,6 +20,8 @@ class MaterialTransferCreate(MaterialTransferBase):
 class MaterialTransferRead(MaterialTransferBase):
     id: int
     date: datetime
+    created_at: datetime
+    updated_at: datetime
 
 class MaterialTransferResponse(SQLModel):
     status: str
@@ -44,6 +46,8 @@ class PurchaseEntryRead(PurchaseEntryBase):
     status: PurchaseStatus
     tokens_earned: int
     total_amount: float
+    created_at: datetime
+    updated_at: datetime
 
 class PurchaseEntryResponse(SQLModel):
     status: str
@@ -64,6 +68,8 @@ class SchemeCreate(SchemeBase):
 
 class SchemeRead(SchemeBase):
     id: int
+    created_at: datetime
+    updated_at: datetime
 
 class SchemeResponse(SQLModel):
     status: str
@@ -83,6 +89,8 @@ class RewardRedeemRead(RewardRedeemBase):
     contractor_id: int
     date: datetime
     status: RedeemStatus
+    created_at: datetime
+    updated_at: datetime
 
 class RewardRedeemResponse(SQLModel):
     status: str
