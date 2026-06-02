@@ -5,6 +5,7 @@ from fastapi.responses import HTMLResponse
 from sqlmodel import Session 
 
 from app.database import engine, create_db_and_tables
+from app.migrations import run_migrations
 from app.api import images, users, transfers, purchases, schemes, rewards, dashboard, products, common, notifications
 
 app = FastAPI(
@@ -46,6 +47,7 @@ def seed_static_content():
 @app.on_event("startup")
 def on_startup():
     create_db_and_tables()
+    run_migrations()
     seed_static_content()
     
 def get_session():
