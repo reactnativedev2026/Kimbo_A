@@ -38,7 +38,7 @@ def run_migrations():
                     col_name = col.name.lower()
                     
                     # 1. Compile ALTER TABLE statement
-                    alter_stmt = f"ALTER TABLE {table_name} ADD COLUMN {col.name} {type_ddl}"
+                    alter_stmt = f'ALTER TABLE "{table_name}" ADD COLUMN "{col.name}" {type_ddl}'
                     
                     # 2. Determine default value to populate existing NULL rows
                     post_update_val = None
@@ -76,7 +76,7 @@ def run_migrations():
                     
                     # Backfill existing rows if default value is specified
                     if post_update_val is not None:
-                        update_stmt = f"UPDATE {table_name} SET {col.name} = :val WHERE {col.name} IS NULL"
+                        update_stmt = f'UPDATE "{table_name}" SET "{col.name}" = :val WHERE "{col.name}" IS NULL'
                         print(f"[DB MIGRATION] Table '{table_name}': Updating existing rows for '{col.name}'...")
                         try:
                             connection.execute(text(update_stmt), {"val": post_update_val})
