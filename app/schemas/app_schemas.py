@@ -51,6 +51,18 @@ class PurchaseEntryRead(PurchaseEntryBase):
     created_at: datetime
     updated_at: datetime
 
+class ProductDetail(SQLModel):
+    id: int
+    name: str
+    description: Optional[str] = None
+    unit: str
+    price_per_unit: float
+    token_points_per_unit: float
+    image_url: Optional[str] = None
+
+class PurchaseEntryWithProductRead(PurchaseEntryRead):
+    product: Optional[ProductDetail] = None
+
 class PurchaseEntryResponse(SQLModel):
     status: str
     message: str
@@ -101,11 +113,30 @@ class RewardRedeemResponse(SQLModel):
     data: RewardRedeemRead
 
 # Dashboard Schemas
+class EarningChartItem(SQLModel):
+    label: str
+    amount: float
+
+class RecentPurchaseItem(SQLModel):
+    id: int
+    contractor_name: str
+    product_name: str
+    quantity_bought: float
+    total_amount: float
+    tokens_earned: int
+    status: str
+    bill_number: Optional[str] = None
+    date: datetime
+
 class AdminDashboardStats(SQLModel):
     total_contractors: int
-    total_material_transfers: int
+    total_approved_purchases: int
     total_redeemed_rewards: int
     active_schemes: int
+    daily_earnings: List[EarningChartItem] = []
+    weekly_earnings: List[EarningChartItem] = []
+    monthly_earnings: List[EarningChartItem] = []
+    recent_purchases: List[RecentPurchaseItem] = []
 
 class ContractorDashboardStats(SQLModel):
     total_tokens: int

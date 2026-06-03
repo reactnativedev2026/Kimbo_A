@@ -2,8 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from typing import List, Optional
 from app.database import engine
+import uuid
 from app.models import PurchaseEntry, User, Product, PurchaseStatus
-from app.schemas.app_schemas import PurchaseEntryCreate, PurchaseEntryResponse, PurchaseEntryRead
+from app.schemas.app_schemas import PurchaseEntryCreate, PurchaseEntryResponse, PurchaseEntryRead, PurchaseEntryWithProductRead, ProductDetail
 from app.api.users import get_current_admin, get_current_contractor
 
 router = APIRouter()
@@ -46,13 +47,43 @@ def add_purchase_contractor(
         "data": db_purchase
     }
 
-@router.get("/contractor", response_model=List[PurchaseEntryRead])
+@router.get("/contractor", response_model=List[PurchaseEntryWithProductRead])
 def get_purchases_contractor(
     session: Session = Depends(get_session),
     contractor_user: User = Depends(get_current_contractor)
 ):
     purchases = session.exec(select(PurchaseEntry).where(PurchaseEntry.contractor_id == contractor_user.id)).all()
-    return purchases
+    result = []
+    for p in purchases:
+        product = session.get(Product, p.product_id)
+        product_detail = None
+        if product:
+            product_detail = ProductDetail(
+                id=product.id,
+                name=product.name,
+                description=product.description,
+                unit=product.unit,
+                price_per_unit=product.price_per_unit,
+                token_points_per_unit=product.token_points_per_unit,
+                image_url=product.image_url,
+            )
+        result.append(PurchaseEntryWithProductRead(
+            id=p.id,
+            product_id=p.product_id,
+            quantity_bought=p.quantity_bought,
+            bill_number=p.bill_number,
+            contractor_id=p.contractor_id,
+            date=p.date,
+            status=p.status,
+            tokens_earned=p.tokens_earned,
+            total_amount=p.total_amount,
+            payment_method=p.payment_method,
+            transaction_id=p.transaction_id,
+            created_at=p.created_at,
+            updated_at=p.updated_at,
+            product=product_detail,
+        ))
+    return result
 
 # ==============================
 # ADMIN APIs
@@ -82,6 +113,9 @@ def update_purchase_status(
         raise HTTPException(status_code=400, detail="Purchase is already approved.")
 
     db_purchase.status = status
+    # Auto-generate bill number if not set
+    if not db_purchase.bill_number:
+        db_purchase.bill_number = f"SBBMS-BN-{uuid.uuid4().hex[:8].upper()}"
     
     # Notify the contractor about status change
     from app.utils.notifications import create_notification
