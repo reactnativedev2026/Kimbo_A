@@ -125,6 +125,21 @@ def login_user(login_data: UserLogin, session: Session = Depends(get_session)):
     user = session.exec(select(User).where(User.email == login_data.email)).first()
     if not user or not verify_password(login_data.password, user.password):
         raise HTTPException(status_code=401, detail="Invalid email or password")
+        
+    # Update FCM token and device type if provided
+    updated = False
+    if login_data.fcm_token is not None:
+        user.fcm_token = login_data.fcm_token
+        updated = True
+    if login_data.device_type is not None:
+        user.device_type = login_data.device_type
+        updated = True
+        
+    if updated:
+        session.add(user)
+        session.commit()
+        session.refresh(user)
+        
     access_token = create_access_token(data={"sub": user.email, "user_id": user.id})
     return {
         "status": "success",

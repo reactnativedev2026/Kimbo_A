@@ -143,3 +143,41 @@ New schema: `RecentPurchaseItem`
 - **Bug:** Attempting to process data using `current_user` caused a 500 Internal Server Error (`InvalidRequestError: Object is already attached to session 'X' (this is 'Y')`).
 - **Cause:** Duplicate definitions of `get_session()` in multiple API routers caused FastAPI's Dependency Injection to instantiate multiple separate database sessions per HTTP request.
 - **Fix:** Removed all local `get_session()` instances inside router files. They now correctly import `get_session` centrally from `app.database`, ensuring a single session lifecycle per request.
+
+---
+
+## 6. App Notifications for Schemes & Rewards
+
+**Files:** `app/api/schemes.py`, `app/api/rewards.py`
+
+In-app notifications have been integrated into the following flows so users are alerted automatically:
+- **New Scheme Launch:** When an admin creates a new scheme, all active contractors receive a "New Scheme Available!" notification.
+- **Reward Request:** When a contractor submits a scheme redemption request, they receive a confirmation notification.
+- **Reward Approval/Rejection:** When an admin updates the status of a reward request, the contractor is instantly notified of the outcome.
+
+*(Frontend Note: Ensure you poll or fetch `/notifications/` to show these to the user in the app)*
+
+---
+
+## 7. FCM Token & Device Type Support in Login API
+
+**Files:** `app/schemas/user_schema.py`, `app/api/users.py`, `app/models.py`
+
+The Login API (`POST /users/auth/login`) now accepts optional device parameters to support Push Notifications in the future and track device telemetry.
+
+### Updated Request Body
+
+```json
+{
+  "email": "user@example.com",
+  "password": "yourpassword123",
+  "fcm_token": "YOUR_FIREBASE_FCM_TOKEN_HERE",
+  "device_type": "android" 
+}
+```
+
+- Both `fcm_token` and `device_type` are optional.
+- If provided during login, the database will automatically update the user's record with these new values.
+- These fields are also returned in the `user_data` response object.
+
+*(Frontend Note: Make sure to capture the FCM token on app launch and pass it along with `device_type` ("android" / "ios") when calling the login API.)*

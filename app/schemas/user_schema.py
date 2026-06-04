@@ -23,6 +23,8 @@ class UserCreate(UserBase):
 class UserRead(UserBase):
     id: int
     total_tokens: int
+    fcm_token: Optional[str] = None
+    device_type: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 
@@ -60,3 +62,5 @@ class UserLoginResponse(SQLModel):
 class UserLogin(SQLModel):
     email: EmailStr
     password: str
+    fcm_token: Optional[str] = None
+    device_type: Optional[str] = None

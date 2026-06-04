@@ -34,6 +34,9 @@ class User(SQLModel, table=True):
     
     total_tokens: int = Field(default=0)
     
+    fcm_token: Optional[str] = Field(default=None)
+    device_type: Optional[str] = Field(default=None)
+    
     created_at: datetime = Field(default_factory=datetime.utcnow, sa_column=Column(DateTime, default=datetime.utcnow))
     updated_at: datetime = Field(default_factory=datetime.utcnow, sa_column=Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow))
 
