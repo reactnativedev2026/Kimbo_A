@@ -1,17 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from typing import List, Optional
-from app.database import engine
+from app.database import engine, get_session
 import uuid
 from app.models import PurchaseEntry, User, Product, PurchaseStatus
 from app.schemas.app_schemas import PurchaseEntryCreate, PurchaseEntryResponse, PurchaseEntryRead, PurchaseEntryWithProductRead, ProductDetail
 from app.api.users import get_current_admin, get_current_contractor
 
 router = APIRouter()
-
-def get_session():
-    with Session(engine) as session:
-        yield session
 
 # ==============================
 # CONTRACTOR APIs

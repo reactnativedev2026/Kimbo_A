@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from typing import List
-from app.database import engine
+from app.database import engine, get_session
 from app.models import ProductType, Product, User
 from app.schemas.product_schema import (
     ProductTypeCreate, ProductTypeUpdate, ProductTypeResponse, ProductTypeListResponse, ProductTypeRead,
@@ -10,10 +10,6 @@ from app.schemas.product_schema import (
 from app.api.users import get_current_admin, get_current_contractor, get_current_user
 
 router = APIRouter()
-
-def get_session():
-    with Session(engine) as session:
-        yield session
 
 # ==============================
 # PRODUCT TYPES

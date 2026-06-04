@@ -95,11 +95,13 @@ class Scheme(SQLModel, table=True):
     description: str
     start_date: datetime
     end_date: datetime
+    tokens_required: int = Field(default=0)
     banner_image: Optional[str] = None
     is_active: bool = Field(default=True)
-
     created_at: datetime = Field(default_factory=datetime.utcnow, sa_column=Column(DateTime, default=datetime.utcnow))
     updated_at: datetime = Field(default_factory=datetime.utcnow, sa_column=Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow))
+    
+    reward_requests: List["RewardRedeem"] = Relationship(back_populates="scheme")
 
 
 class RedeemStatus(str, Enum):
@@ -111,6 +113,7 @@ class RewardRedeem(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     date: datetime = Field(default_factory=datetime.utcnow)
     contractor_id: int = Field(foreign_key="user.id")
+    scheme_id: Optional[int] = Field(default=None, foreign_key="scheme.id")
     tokens_used: int
     reward_description: str
     status: RedeemStatus = Field(default=RedeemStatus.PENDING)
@@ -119,6 +122,7 @@ class RewardRedeem(SQLModel, table=True):
     updated_at: datetime = Field(default_factory=datetime.utcnow, sa_column=Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow))
 
     contractor: User = Relationship(back_populates="reward_requests")
+    scheme: Optional[Scheme] = Relationship(back_populates="reward_requests")
 
 class ProductType(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)

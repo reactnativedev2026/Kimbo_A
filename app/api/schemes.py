@@ -1,16 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from typing import List
-from app.database import engine
-from app.models import Scheme, User, UserRole
+from app.database import engine, get_session
+from app.models import Scheme, User, UserRole, UserStatus
 from app.schemas.app_schemas import SchemeCreate, SchemeResponse, SchemeRead
 from app.api.users import get_current_user
+from app.utils.notifications import create_notification
 
 router = APIRouter()
-
-def get_session():
-    with Session(engine) as session:
-        yield session
 
 @router.post("/", response_model=SchemeResponse)
 def create_scheme(
@@ -25,6 +22,18 @@ def create_scheme(
     session.add(db_scheme)
     session.commit()
     session.refresh(db_scheme)
+
+    # Notify all active contractors about the new scheme
+    contractors = session.exec(select(User).where(User.role == UserRole.CONTRACTOR, User.status == UserStatus.ACTIVE)).all()
+    for contractor in contractors:
+        create_notification(
+            session,
+            contractor.id,
+            "New Scheme Available!",
+            f"A new scheme '{db_scheme.title}' has been launched."
+        )
+    if contractors:
+        session.commit()
 
     return {
         "status": "success",

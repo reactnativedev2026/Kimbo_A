@@ -75,6 +75,7 @@ class SchemeBase(SQLModel):
     description: str
     start_date: datetime
     end_date: datetime
+    tokens_required: int = 0
     banner_image: Optional[str] = None
     is_active: bool = True
 
@@ -95,9 +96,10 @@ class SchemeResponse(SQLModel):
 class RewardRedeemBase(SQLModel):
     tokens_used: int
     reward_description: str
+    scheme_id: Optional[int] = None
 
-class RewardRedeemCreate(RewardRedeemBase):
-    contractor_id: int
+class RewardRedeemCreate(SQLModel):
+    scheme_id: int
 
 class RewardRedeemRead(RewardRedeemBase):
     id: int
@@ -106,6 +108,8 @@ class RewardRedeemRead(RewardRedeemBase):
     status: RedeemStatus
     created_at: datetime
     updated_at: datetime
+    
+    scheme: Optional[SchemeRead] = None
 
 class RewardRedeemResponse(SQLModel):
     status: str

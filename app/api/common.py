@@ -4,7 +4,7 @@ from sqlmodel import Session, select
 from typing import List, Optional
 from datetime import datetime
 
-from app.database import engine
+from app.database import engine, get_session
 from app.models import StaticContent, SupportTicket, User, UserRole, SupportStatus, FAQ
 from app.schemas.common_schema import (
     StaticContentCreate, StaticContentUpdate, StaticContentRead, StaticContentResponse,
@@ -14,10 +14,6 @@ from app.schemas.common_schema import (
 from app.api.users import get_current_user
 
 router = APIRouter()
-
-def get_session():
-    with Session(engine) as session:
-        yield session
 
 def render_premium_html(title: str, content: str) -> str:
     # Format linebreaks

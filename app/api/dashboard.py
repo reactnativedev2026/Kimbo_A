@@ -2,16 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from datetime import datetime, timedelta
 from collections import defaultdict
-from app.database import engine
+from app.database import engine, get_session
 from app.models import User, UserRole, MaterialTransfer, PurchaseEntry, PurchaseStatus, Scheme, RewardRedeem, Product
 from app.schemas.app_schemas import AdminDashboardStats, ContractorDashboardStats, EarningChartItem, RecentPurchaseItem
 from app.api.users import get_current_user
 
 router = APIRouter()
-
-def get_session():
-    with Session(engine) as session:
-        yield session
 
 @router.get("/admin", response_model=AdminDashboardStats)
 def get_admin_dashboard(

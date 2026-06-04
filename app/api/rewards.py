@@ -1,16 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from typing import List
-from app.database import engine
-from app.models import RewardRedeem, User, UserRole, RedeemStatus
+from app.database import engine, get_session
+from app.models import RewardRedeem, User, UserRole, RedeemStatus, Scheme
 from app.schemas.app_schemas import RewardRedeemCreate, RewardRedeemResponse, RewardRedeemRead
 from app.api.users import get_current_user
+from app.utils.notifications import create_notification
 
 router = APIRouter()
-
-def get_session():
-    with Session(engine) as session:
-        yield session
 
 @router.post("/redeem", response_model=RewardRedeemResponse)
 def request_redeem(
@@ -21,21 +18,38 @@ def request_redeem(
     if current_user.role != UserRole.CONTRACTOR:
         raise HTTPException(status_code=403, detail="Only contractors can request reward redemptions")
 
-    if redeem_data.contractor_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Cannot request redeem for another user")
+    scheme = session.get(Scheme, redeem_data.scheme_id)
+    if not scheme or not scheme.is_active:
+        raise HTTPException(status_code=404, detail="Scheme not found or inactive")
         
-    if current_user.total_tokens < redeem_data.tokens_used:
+    if current_user.total_tokens < scheme.tokens_required:
         raise HTTPException(status_code=400, detail="Insufficient tokens")
 
     # Deduct tokens
-    current_user.total_tokens -= redeem_data.tokens_used
+    current_user.total_tokens -= scheme.tokens_required
     
-    db_redeem = RewardRedeem.model_validate(redeem_data)
+    db_redeem = RewardRedeem(
+        contractor_id=current_user.id,
+        scheme_id=scheme.id,
+        tokens_used=scheme.tokens_required,
+        reward_description=scheme.title,
+    )
     
     session.add(db_redeem)
     session.add(current_user)
     session.commit()
     session.refresh(db_redeem)
+    
+    create_notification(
+        session,
+        current_user.id,
+        "Reward Request Submitted",
+        f"Your request to redeem '{scheme.title}' has been submitted successfully."
+    )
+    session.commit()
+
+    # Explicitly assign scheme to prevent lazy loading serialization issues outside the session
+    db_redeem.scheme = scheme
 
     return {
         "status": "success",
@@ -68,6 +82,14 @@ def update_redeem_status(
     session.add(db_redeem)
     session.commit()
     session.refresh(db_redeem)
+
+    create_notification(
+        session,
+        db_redeem.contractor_id,
+        "Reward Request Updated",
+        f"Your reward request for '{db_redeem.reward_description}' has been {status}."
+    )
+    session.commit()
 
     return {
         "status": "success",

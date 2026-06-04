@@ -1,16 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
-from app.database import engine
+from app.database import engine, get_session
 from app.utils.notifications import get_notifications, mark_notification_as_read, create_notification
 from app.models import Notification
 from app.schemas.notification_schema import NotificationListResponse, NotificationRead
 from app.api.users import get_current_user
 
 router = APIRouter()
-
-def get_session():
-    with Session(engine) as session:
-        yield session
 
 @router.get("/", response_model=NotificationListResponse, summary="List notifications", tags=["notifications"])
 def list_notifications(

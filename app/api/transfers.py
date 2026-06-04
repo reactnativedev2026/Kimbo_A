@@ -1,16 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from typing import List
-from app.database import engine
 from app.models import MaterialTransfer, User
 from app.schemas.app_schemas import MaterialTransferCreate, MaterialTransferResponse, MaterialTransferRead
+from app.database import engine, get_session
 from app.api.users import get_current_admin, get_current_contractor
 
 router = APIRouter()
-
-def get_session():
-    with Session(engine) as session:
-        yield session
 
 # ==============================
 # ADMIN APIs

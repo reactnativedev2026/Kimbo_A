@@ -122,3 +122,24 @@ New schema: `RecentPurchaseItem`
 | `app/api/purchases.py` | Bill number auto-gen + product details in contractor response |
 | `app/api/dashboard.py` | Approved purchases count, earning charts, recent 5 purchases |
 | `app/schemas/app_schemas.py` | New schemas: `ProductDetail`, `PurchaseEntryWithProductRead`, `EarningChartItem`, `RecentPurchaseItem`, updated `AdminDashboardStats` |
+
+---
+
+## 4. Reward Redemption Integrated with Schemes
+
+**Files:** `app/models.py`, `app/schemas/app_schemas.py`, `app/api/rewards.py`
+
+- The `RewardRedeem` model is now connected to `Scheme`.
+- Added `tokens_required` to the `Scheme` model to dynamically cost redemptions.
+- The `POST /rewards/redeem` endpoint now accepts `scheme_id` instead of a manual description and token count.
+- Automatically handles token verification and deduction for a more user-friendly flow.
+
+---
+
+## 5. Global DB Session Bug Fix
+
+**Files:** `app/api/rewards.py`, `app/api/dashboard.py`, `app/api/transfers.py`, `app/api/schemes.py`, `app/api/purchases.py`, `app/api/products.py`, `app/api/notifications.py`, `app/api/common.py`
+
+- **Bug:** Attempting to process data using `current_user` caused a 500 Internal Server Error (`InvalidRequestError: Object is already attached to session 'X' (this is 'Y')`).
+- **Cause:** Duplicate definitions of `get_session()` in multiple API routers caused FastAPI's Dependency Injection to instantiate multiple separate database sessions per HTTP request.
+- **Fix:** Removed all local `get_session()` instances inside router files. They now correctly import `get_session` centrally from `app.database`, ensuring a single session lifecycle per request.
