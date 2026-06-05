@@ -68,6 +68,7 @@ class PurchaseEntryResponse(SQLModel):
     message: str
     data: PurchaseEntryRead
     bill_html: Optional[str] = None
+    pdf_url: Optional[str] = None
 
 # Scheme Schemas
 class SchemeBase(SQLModel):
@@ -86,6 +87,15 @@ class SchemeRead(SchemeBase):
     id: int
     created_at: datetime
     updated_at: datetime
+
+class SchemeUpdate(SQLModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    tokens_required: Optional[int] = None
+    banner_image: Optional[str] = None
+    is_active: Optional[bool] = None
 
 class SchemeResponse(SQLModel):
     status: str

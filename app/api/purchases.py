@@ -118,6 +118,7 @@ def update_purchase_status(
     contractor = session.get(User, db_purchase.contractor_id)
     
     bill_html = None
+    pdf_url = None
     if status == PurchaseStatus.APPROVED:
         if payment_method:
             db_purchase.payment_method = payment_method
@@ -149,10 +150,12 @@ def update_purchase_status(
         upi_row = ""
         if payment_method_str == "ONLINE" and upi_id:
             upi_row = f"""
-            <div class="invoice-row">
-              <span class="invoice-label">UPI ID / Txn ID</span>
-              <span class="invoice-value">{upi_id}</span>
-            </div>
+            <table class="invoice-table" style="margin-bottom: 0;">
+              <tr>
+                <td class="invoice-label">UPI ID / Txn ID</td>
+                <td class="invoice-value">{{upi_id}}</td>
+              </tr>
+            </table>
             """
             
         bill_html = f"""<!DOCTYPE html>
@@ -161,7 +164,7 @@ def update_purchase_status(
 <meta charset="utf-8">
 <style>
   body {{
-    font-family: 'Inter', sans-serif;
+    font-family: 'Inter', Helvetica, Arial, sans-serif;
     color: #1e293b;
     background-color: #f8fafc;
     margin: 0;
@@ -177,6 +180,7 @@ def update_purchase_status(
     border: 1px solid #e2e8f0;
   }}
   .invoice-header {{
+    background-color: #059669;
     background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     padding: 24px;
     color: white;
@@ -187,11 +191,13 @@ def update_purchase_status(
     font-size: 22px;
     font-weight: 800;
     letter-spacing: 0.5px;
+    color: white;
   }}
   .invoice-header p {{
     margin: 4px 0 0 0;
     font-size: 13px;
     opacity: 0.9;
+    color: white;
   }}
   .invoice-body {{
     padding: 24px;
@@ -228,20 +234,23 @@ def update_purchase_status(
     border-top: 1px dashed #cbd5e1;
     margin: 20px 0;
   }}
-  .invoice-row {{
-    display: flex;
-    justify-content: space-between;
+  .invoice-table {{
+    width: 100%;
     margin-bottom: 12px;
+  }}
+  .invoice-table td {{
     font-size: 13.5px;
   }}
   .invoice-label {{
     color: #64748b;
     font-weight: 500;
+    width: 50%;
   }}
   .invoice-value {{
     color: #0f172a;
     font-weight: 600;
     text-align: right;
+    width: 50%;
   }}
   .product-details {{
     background-color: #f1f5f9;
@@ -290,50 +299,58 @@ def update_purchase_status(
       
       <div class="divider"></div>
       
-      <div class="invoice-row">
-        <span class="invoice-label">Receipt/Purchase ID</span>
-        <span class="invoice-value">#KB-PUR-{db_purchase.id}</span>
-      </div>
-      <div class="invoice-row">
-        <span class="invoice-label">Date & Time</span>
-        <span class="invoice-value">{date_str}</span>
-      </div>
-      <div class="invoice-row">
-        <span class="invoice-label">Bill Number</span>
-        <span class="invoice-value">{bill_num}</span>
-      </div>
+      <table class="invoice-table">
+        <tr>
+          <td class="invoice-label">Receipt/Purchase ID</td>
+          <td class="invoice-value">#KB-PUR-{db_purchase.id}</td>
+        </tr>
+        <tr>
+          <td class="invoice-label">Date & Time</td>
+          <td class="invoice-value">{date_str}</td>
+        </tr>
+        <tr>
+          <td class="invoice-label">Bill Number</td>
+          <td class="invoice-value">{bill_num}</td>
+        </tr>
+      </table>
       
       <div class="divider"></div>
       
-      <div class="invoice-row">
-        <span class="invoice-label">Contractor Name</span>
-        <span class="invoice-value">{contractor_name}</span>
-      </div>
-      <div class="invoice-row">
-        <span class="invoice-label">Mobile Number</span>
-        <span class="invoice-value">{contractor_mobile}</span>
-      </div>
-      <div class="invoice-row">
-        <span class="invoice-label">Contractor Code</span>
-        <span class="invoice-value">{contractor_code}</span>
-      </div>
+      <table class="invoice-table">
+        <tr>
+          <td class="invoice-label">Contractor Name</td>
+          <td class="invoice-value">{contractor_name}</td>
+        </tr>
+        <tr>
+          <td class="invoice-label">Mobile Number</td>
+          <td class="invoice-value">{contractor_mobile}</td>
+        </tr>
+        <tr>
+          <td class="invoice-label">Contractor Code</td>
+          <td class="invoice-value">{contractor_code}</td>
+        </tr>
+      </table>
       
       <div class="product-details">
         <div class="product-title">Itemized Purchase</div>
-        <div class="invoice-row">
-          <span class="invoice-label">{product_name}</span>
-          <span class="invoice-value">{db_purchase.quantity_bought} {product_unit} @ ₹{product_price:.2f}/{product_unit}</span>
-        </div>
-        <div class="invoice-row" style="margin-bottom: 0;">
-          <span class="invoice-label">Reward Points Earned</span>
-          <span class="invoice-value" style="color: #059669;">+{db_purchase.tokens_earned} Points</span>
-        </div>
+        <table class="invoice-table">
+          <tr>
+            <td class="invoice-label">{product_name}</td>
+            <td class="invoice-value">{db_purchase.quantity_bought} {product_unit} @ ₹{product_price:.2f}/{product_unit}</td>
+          </tr>
+          <tr>
+            <td class="invoice-label">Reward Points Earned</td>
+            <td class="invoice-value" style="color: #059669;">+{db_purchase.tokens_earned} Points</td>
+          </tr>
+        </table>
       </div>
       
-      <div class="invoice-row">
-        <span class="invoice-label">Payment Mode</span>
-        <span class="invoice-value">{payment_method_str}</span>
-      </div>
+      <table class="invoice-table" style="margin-bottom: 0;">
+        <tr>
+          <td class="invoice-label">Payment Mode</td>
+          <td class="invoice-value">{payment_method_str}</td>
+        </tr>
+      </table>
       {upi_row}
     </div>
     <div class="footer">
@@ -343,6 +360,20 @@ def update_purchase_status(
   </div>
 </body>
 </html>"""
+
+        import os
+        from xhtml2pdf import pisa
+        
+        os.makedirs("uploads", exist_ok=True)
+        pdf_filename = f"receipt_{db_purchase.id}_{uuid.uuid4().hex[:6]}.pdf"
+        pdf_path = os.path.join("uploads", pdf_filename)
+        
+        pdf_html = bill_html.replace('<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">', '')
+        with open(pdf_path, "w+b") as result_file:
+            pisa_status = pisa.CreatePDF(pdf_html, dest=result_file)
+            
+        if not pisa_status.err:
+            pdf_url = f"/static/{pdf_filename}"
 
     else:
         if contractor:
@@ -356,5 +387,6 @@ def update_purchase_status(
         "status": "success",
         "message": f"Purchase status updated to {status}",
         "data": db_purchase,
-        "bill_html": bill_html
+        "bill_html": bill_html,
+        "pdf_url": pdf_url
     }
