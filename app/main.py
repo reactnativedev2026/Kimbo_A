@@ -13,7 +13,8 @@ app = FastAPI(
     description="Backend API for Kimbo AI Application",
     version="1.0.0"
 )
-
+import os
+os.makedirs("uploads", exist_ok=True)
 app.mount("/static", StaticFiles(directory="uploads"), name="static")
 
 def seed_static_content():
@@ -44,11 +45,35 @@ def seed_static_content():
                 session.add(db_content)
         session.commit()
 
+def init_firebase():
+    import firebase_admin
+    from firebase_admin import credentials
+    
+    cred_path = os.getenv("FIREBASE_CREDENTIALS_PATH", "app/firebase-credentials.json")
+    if not os.path.isabs(cred_path):
+        if not os.path.exists(cred_path):
+            project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            resolved_path = os.path.join(project_root, cred_path)
+            if os.path.exists(resolved_path):
+                cred_path = resolved_path
+
+    if os.path.exists(cred_path):
+        try:
+            if not firebase_admin._apps:
+                cred = credentials.Certificate(cred_path)
+                firebase_admin.initialize_app(cred)
+                print(f"[FIREBASE] Initialized successfully using: {cred_path}")
+        except Exception as e:
+            print(f"[FIREBASE] Error initializing Firebase: {e}")
+    else:
+        print(f"[FIREBASE] Credentials file not found at: {cred_path}. Push notifications will not work.")
+
 @app.on_event("startup")
 def on_startup():
     create_db_and_tables()
     run_migrations()
     seed_static_content()
+    init_firebase()
     
 def get_session():
     with Session(engine) as session:
