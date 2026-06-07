@@ -361,36 +361,6 @@ def update_purchase_status(
 </body>
 </html>"""
 
-        import os
-        import logging
-        
-        os.makedirs("uploads", exist_ok=True)
-        pdf_filename = f"receipt_{db_purchase.id}_{uuid.uuid4().hex[:6]}.pdf"
-        pdf_path = os.path.join("uploads", pdf_filename)
-        
-        weasyprint_success = False
-        try:
-            from weasyprint import HTML
-            HTML(string=bill_html).write_pdf(pdf_path)
-            pdf_url = f"/static/{pdf_filename}"
-            weasyprint_success = True
-            logging.info("PDF generated successfully using WeasyPrint.")
-        except (ImportError, OSError) as e:
-            logging.warning(f"WeasyPrint is not available or missing system libraries ({e}). Falling back to xhtml2pdf.")
-            
-        if not weasyprint_success:
-            try:
-                from xhtml2pdf import pisa
-                pdf_html = bill_html.replace('<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">', '')
-                with open(pdf_path, "w+b") as result_file:
-                    pisa_status = pisa.CreatePDF(pdf_html, dest=result_file)
-                if not pisa_status.err:
-                    pdf_url = f"/static/{pdf_filename}"
-                    logging.info("PDF generated successfully using xhtml2pdf fallback.")
-                else:
-                    logging.error(f"xhtml2pdf fallback error: {pisa_status.err}")
-            except Exception as ex:
-                logging.error(f"Error generating PDF using xhtml2pdf fallback: {ex}")
 
     else:
         if contractor:
