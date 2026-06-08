@@ -45,8 +45,7 @@ def create_scheme(
 def get_schemes(
     session: Session = Depends(get_session)
 ):
-    # Any authenticated user can view schemes (or we can make it public)
-    schemes = session.exec(select(Scheme).where(Scheme.is_active == True)).all()
+    schemes = session.exec(select(Scheme).where(Scheme.is_active == True).order_by(Scheme.created_at.desc())).all()
     return schemes
 
 @router.put("/{scheme_id}", response_model=SchemeResponse)

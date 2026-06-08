@@ -54,7 +54,7 @@ def get_purchases_contractor(
     session: Session = Depends(get_session),
     contractor_user: User = Depends(get_current_contractor)
 ):
-    purchases = session.exec(select(PurchaseEntry).where(PurchaseEntry.contractor_id == contractor_user.id)).all()
+    purchases = session.exec(select(PurchaseEntry).where(PurchaseEntry.contractor_id == contractor_user.id).order_by(PurchaseEntry.created_at.desc())).all()
     result = []
     for p in purchases:
         product = session.get(Product, p.product_id)
@@ -95,7 +95,7 @@ def get_purchases_admin(
     session: Session = Depends(get_session),
     admin_user: User = Depends(get_current_admin)
 ):
-    purchases = session.exec(select(PurchaseEntry)).all()
+    purchases = session.exec(select(PurchaseEntry).order_by(PurchaseEntry.created_at.desc())).all()
     result = []
     for p in purchases:
         product = session.get(Product, p.product_id)

@@ -155,7 +155,7 @@ def list_users(
     session: Session = Depends(get_session),
     admin_user: User = Depends(get_current_admin),
 ):
-    users = session.exec(select(User)).all()
+    users = session.exec(select(User).order_by(User.created_at.desc())).all()
     return {"status": "success", "message": "User list fetched successfully", "user_data": users}
 
 @router.get("/admin/contractors", response_model=UserListResponse)
@@ -163,7 +163,7 @@ def list_contractors(
     session: Session = Depends(get_session),
     admin_user: User = Depends(get_current_admin),
 ):
-    contractors = session.exec(select(User).where(User.role == UserRole.CONTRACTOR)).all()
+    contractors = session.exec(select(User).where(User.role == UserRole.CONTRACTOR).order_by(User.created_at.desc())).all()
     return {"status": "success", "message": "Contractors list fetched successfully", "user_data": contractors}
 
 @router.get("/admin/admins", response_model=UserListResponse)
@@ -171,7 +171,7 @@ def list_admins(
     session: Session = Depends(get_session),
     admin_user: User = Depends(get_current_admin),
 ):
-    admins = session.exec(select(User).where(User.role == UserRole.ADMIN)).all()
+    admins = session.exec(select(User).where(User.role == UserRole.ADMIN).order_by(User.created_at.desc())).all()
     return {"status": "success", "message": "Admins list fetched successfully", "user_data": admins}
 
 class AddPointsRequest(BaseModel):

@@ -108,7 +108,7 @@ def get_redeems(
     current_user: User = Depends(get_current_user)
 ):
     if current_user.role == UserRole.ADMIN:
-        redeems = session.exec(select(RewardRedeem)).all()
+        redeems = session.exec(select(RewardRedeem).order_by(RewardRedeem.created_at.desc())).all()
     else:
-        redeems = session.exec(select(RewardRedeem).where(RewardRedeem.contractor_id == current_user.id)).all()
+        redeems = session.exec(select(RewardRedeem).where(RewardRedeem.contractor_id == current_user.id).order_by(RewardRedeem.created_at.desc())).all()
     return redeems

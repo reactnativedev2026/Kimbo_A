@@ -37,7 +37,7 @@ def get_transfers_admin(
     session: Session = Depends(get_session),
     admin_user: User = Depends(get_current_admin)
 ):
-    transfers = session.exec(select(MaterialTransfer)).all()
+    transfers = session.exec(select(MaterialTransfer).order_by(MaterialTransfer.created_at.desc())).all()
     return transfers
 
 # ==============================
@@ -48,5 +48,9 @@ def get_transfers_contractor(
     session: Session = Depends(get_session),
     contractor_user: User = Depends(get_current_contractor)
 ):
-    transfers = session.exec(select(MaterialTransfer).where(MaterialTransfer.contractor_id == contractor_user.id).all())
+    transfers = session.exec(
+        select(MaterialTransfer)
+        .where(MaterialTransfer.contractor_id == contractor_user.id)
+        .order_by(MaterialTransfer.created_at.desc())
+    ).all()
     return transfers

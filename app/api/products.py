@@ -41,7 +41,7 @@ def get_product_types(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user) # Anyone can view active types
 ):
-    types = session.exec(select(ProductType).where(ProductType.is_active == True)).all()
+    types = session.exec(select(ProductType).where(ProductType.is_active == True).order_by(ProductType.created_at.desc())).all()
     type_reads = [ProductTypeRead.model_validate(t) if hasattr(ProductTypeRead, 'model_validate') else ProductTypeRead.from_orm(t) for t in types]
     return {
         "status": "success",
@@ -129,7 +129,7 @@ def get_products(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user) # Anyone can view products
 ):
-    products = session.exec(select(Product).where(Product.is_active == True)).all()
+    products = session.exec(select(Product).where(Product.is_active == True).order_by(Product.created_at.desc())).all()
     product_reads = [ProductRead.model_validate(p) if hasattr(ProductRead, 'model_validate') else ProductRead.from_orm(p) for p in products]
     return {
         "status": "success",
@@ -143,7 +143,7 @@ def get_products_by_type(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
 ):
-    products = session.exec(select(Product).where(Product.product_type_id == type_id, Product.is_active == True)).all()
+    products = session.exec(select(Product).where(Product.product_type_id == type_id, Product.is_active == True).order_by(Product.created_at.desc())).all()
     product_reads = [ProductRead.model_validate(p) if hasattr(ProductRead, 'model_validate') else ProductRead.from_orm(p) for p in products]
     return {
         "status": "success",
