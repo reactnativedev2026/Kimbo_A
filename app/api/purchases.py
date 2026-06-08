@@ -4,7 +4,11 @@ from typing import List, Optional
 from app.database import engine, get_session
 import uuid
 from app.models import PurchaseEntry, User, Product, PurchaseStatus
-from app.schemas.app_schemas import PurchaseEntryCreate, PurchaseEntryResponse, PurchaseEntryRead, PurchaseEntryWithProductRead, PurchaseEntryAdminRead, ProductDetail, ContractorDetail
+from app.schemas.app_schemas import (
+    PurchaseEntryCreate, PurchaseEntryResponse, PurchaseEntryRead,
+    PurchaseEntryWithProductRead, PurchaseEntryAdminRead, ProductDetail,
+    ContractorDetail, PurchaseEntryWithProductResponse, PurchaseEntryAdminResponse
+)
 from app.api.users import get_current_admin, get_current_contractor
 
 router = APIRouter()
@@ -12,7 +16,7 @@ router = APIRouter()
 # ==============================
 # CONTRACTOR APIs
 # ==============================
-@router.post("/contractor", response_model=PurchaseEntryResponse)
+@router.post("/contractor", response_model=PurchaseEntryWithProductResponse)
 def add_purchase_contractor(
     purchase_data: PurchaseEntryCreate, 
     session: Session = Depends(get_session),
@@ -36,6 +40,8 @@ def add_purchase_contractor(
     session.add(db_purchase)
     session.commit()
     session.refresh(db_purchase)
+
+    db_purchase.product = product
 
     return {
         "status": "success",
@@ -133,7 +139,7 @@ def get_purchases_admin(
         ))
     return result
 
-@router.patch("/admin/{purchase_id}/status", response_model=PurchaseEntryResponse)
+@router.patch("/admin/{purchase_id}/status", response_model=PurchaseEntryAdminResponse)
 def update_purchase_status(
     purchase_id: int,
     status: PurchaseStatus,
@@ -410,6 +416,9 @@ def update_purchase_status(
     session.add(db_purchase)
     session.commit()
     session.refresh(db_purchase)
+
+    db_purchase.product = session.get(Product, db_purchase.product_id)
+    db_purchase.contractor = session.get(User, db_purchase.contractor_id)
 
     return {
         "status": "success",

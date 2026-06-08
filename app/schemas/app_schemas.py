@@ -81,6 +81,20 @@ class PurchaseEntryResponse(SQLModel):
     bill_html: Optional[str] = None
     pdf_url: Optional[str] = None
 
+class PurchaseEntryWithProductResponse(SQLModel):
+    status: str
+    message: str
+    data: PurchaseEntryWithProductRead
+    bill_html: Optional[str] = None
+    pdf_url: Optional[str] = None
+
+class PurchaseEntryAdminResponse(SQLModel):
+    status: str
+    message: str
+    data: PurchaseEntryAdminRead
+    bill_html: Optional[str] = None
+    pdf_url: Optional[str] = None
+
 # Scheme Schemas
 class SchemeBase(SQLModel):
     title: str
@@ -131,6 +145,7 @@ class RewardRedeemRead(RewardRedeemBase):
     updated_at: datetime
     
     scheme: Optional[SchemeRead] = None
+    contractor: Optional[ContractorDetail] = None
 
 class RewardRedeemResponse(SQLModel):
     status: str

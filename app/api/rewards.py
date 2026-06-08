@@ -48,8 +48,9 @@ def request_redeem(
     )
     session.commit()
 
-    # Explicitly assign scheme to prevent lazy loading serialization issues outside the session
+    # Explicitly assign scheme and contractor to prevent lazy loading serialization issues outside the session
     db_redeem.scheme = scheme
+    db_redeem.contractor = current_user
 
     return {
         "status": "success",
@@ -90,6 +91,10 @@ def update_redeem_status(
         f"Your reward request for '{db_redeem.reward_description}' has been {status}."
     )
     session.commit()
+
+    # Explicitly assign scheme and contractor to prevent lazy loading serialization issues
+    db_redeem.scheme = session.get(Scheme, db_redeem.scheme_id) if db_redeem.scheme_id else None
+    db_redeem.contractor = session.get(User, db_redeem.contractor_id) if db_redeem.contractor_id else None
 
     return {
         "status": "success",

@@ -116,6 +116,8 @@ def add_product(
     session.commit()
     session.refresh(db_product)
 
+    db_product.product_type = p_type
+
     return {
         "status": "success",
         "message": "Product added successfully",
@@ -173,6 +175,7 @@ def update_product(
     session.commit()
     session.refresh(db_product)
 
+    db_product.product_type = p_type
     
     return {
         "status": "success",
