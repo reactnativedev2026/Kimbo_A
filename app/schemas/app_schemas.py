@@ -4,6 +4,13 @@ from datetime import datetime
 from app.models import RedeemStatus
 
 # Material Transfer Schemas
+class ContractorDetail(SQLModel):
+    id: int
+    full_name: str
+    mobile_number: Optional[str] = None
+    contractor_code: Optional[str] = None
+    address: Optional[str] = None
+
 class MaterialTransferBase(SQLModel):
     transfer_id: str
     contractor_id: int
@@ -62,6 +69,10 @@ class ProductDetail(SQLModel):
 
 class PurchaseEntryWithProductRead(PurchaseEntryRead):
     product: Optional[ProductDetail] = None
+
+class PurchaseEntryAdminRead(PurchaseEntryRead):
+    product: Optional[ProductDetail] = None
+    contractor: Optional[ContractorDetail] = None
 
 class PurchaseEntryResponse(SQLModel):
     status: str

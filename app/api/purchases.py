@@ -4,7 +4,7 @@ from typing import List, Optional
 from app.database import engine, get_session
 import uuid
 from app.models import PurchaseEntry, User, Product, PurchaseStatus
-from app.schemas.app_schemas import PurchaseEntryCreate, PurchaseEntryResponse, PurchaseEntryRead, PurchaseEntryWithProductRead, ProductDetail
+from app.schemas.app_schemas import PurchaseEntryCreate, PurchaseEntryResponse, PurchaseEntryRead, PurchaseEntryWithProductRead, PurchaseEntryAdminRead, ProductDetail, ContractorDetail
 from app.api.users import get_current_admin, get_current_contractor
 
 router = APIRouter()
@@ -84,13 +84,54 @@ def get_purchases_contractor(
 # ==============================
 # ADMIN APIs
 # ==============================
-@router.get("/admin", response_model=List[PurchaseEntryRead])
+@router.get("/admin", response_model=List[PurchaseEntryAdminRead])
 def get_purchases_admin(
     session: Session = Depends(get_session),
     admin_user: User = Depends(get_current_admin)
 ):
     purchases = session.exec(select(PurchaseEntry)).all()
-    return purchases
+    result = []
+    for p in purchases:
+        product = session.get(Product, p.product_id)
+        product_detail = None
+        if product:
+            product_detail = ProductDetail(
+                id=product.id,
+                name=product.name,
+                description=product.description,
+                unit=product.unit,
+                price_per_unit=product.price_per_unit,
+                token_points_per_unit=product.token_points_per_unit,
+                image_url=product.image_url,
+            )
+        contractor = session.get(User, p.contractor_id)
+        contractor_detail = None
+        if contractor:
+            contractor_detail = ContractorDetail(
+                id=contractor.id,
+                full_name=contractor.full_name,
+                mobile_number=contractor.mobile_number,
+                contractor_code=contractor.contractor_code,
+                address=contractor.address,
+            )
+        result.append(PurchaseEntryAdminRead(
+            id=p.id,
+            product_id=p.product_id,
+            quantity_bought=p.quantity_bought,
+            bill_number=p.bill_number,
+            contractor_id=p.contractor_id,
+            date=p.date,
+            status=p.status,
+            tokens_earned=p.tokens_earned,
+            total_amount=p.total_amount,
+            payment_method=p.payment_method,
+            transaction_id=p.transaction_id,
+            created_at=p.created_at,
+            updated_at=p.updated_at,
+            product=product_detail,
+            contractor=contractor_detail,
+        ))
+    return result
 
 @router.patch("/admin/{purchase_id}/status", response_model=PurchaseEntryResponse)
 def update_purchase_status(
