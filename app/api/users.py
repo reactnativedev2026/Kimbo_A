@@ -163,7 +163,7 @@ def list_contractors(
     query = select(User).where(User.role == UserRole.CONTRACTOR)
     total = session.exec(
         select(func.count()).select_from(User).where(User.role == UserRole.CONTRACTOR)
-    ).scalar_one()
+    ).one()
     offset = (page - 1) * limit
     contractors = session.exec(query.offset(offset).limit(limit)).all()
     total_pages = (total + limit - 1) // limit if total > 0 else 1
