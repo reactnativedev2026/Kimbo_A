@@ -107,7 +107,8 @@ def delete_product_type(
     if not db_type:
         raise HTTPException(status_code=404, detail="Product type not found")
         
-    session.delete(db_type)
+    db_type.is_active = False
+    session.add(db_type)
     session.commit()
     
     return {
@@ -216,7 +217,8 @@ def delete_product(
     if not db_product:
         raise HTTPException(status_code=404, detail="Product not found")
         
-    session.delete(db_product)
+    db_product.is_active = False
+    session.add(db_product)
     session.commit()
     
     return {

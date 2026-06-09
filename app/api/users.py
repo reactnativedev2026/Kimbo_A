@@ -153,28 +153,16 @@ def list_users(
     users = session.exec(select(User)).all()
     return {"status": "success", "message": "User list fetched successfully", "user_data": users}
 
-@router.get("/admin/contractors", response_model=PaginatedUserListResponse)
+@router.get("/admin/contractors", response_model=UserListResponse)
 def list_contractors(
-    page: int = Query(1, ge=1, description="Page number"),
-    limit: int = Query(20, ge=1, le=100, description="Number of contractors per page"),
     session: Session = Depends(get_session),
     admin_user: User = Depends(get_current_admin),
 ):
-    query = select(User).where(User.role == UserRole.CONTRACTOR)
-    total = session.exec(
-        select(func.count()).select_from(User).where(User.role == UserRole.CONTRACTOR)
-    ).one()
-    offset = (page - 1) * limit
-    contractors = session.exec(query.offset(offset).limit(limit)).all()
-    total_pages = (total + limit - 1) // limit if total > 0 else 1
+    contractors = session.exec(select(User).where(User.role == UserRole.CONTRACTOR)).all()
     return {
         "status": "success",
         "message": "Contractors list fetched successfully",
         "user_data": contractors,
-        "total": total,
-        "page": page,
-        "per_page": limit,
-        "total_pages": total_pages,
     }
 
 @router.get("/admin/admins", response_model=UserListResponse)
