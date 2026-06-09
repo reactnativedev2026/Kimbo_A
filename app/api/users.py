@@ -1,19 +1,22 @@
 import os
 import shutil
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Form
+from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Form, Query
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlmodel import Session, select
+from sqlalchemy import func
 from pydantic import BaseModel
 
 from app.database import engine, create_db_and_tables, get_session
 from app.models import User, UserRole, MaterialTransfer, PurchaseEntry, RewardRedeem, AdminPointAdjustment, Product, PurchaseStatus
 from app.schemas.user_schema import (
     UserCreate,
+    ContractorCreate,
     UserLogin,
     UserLoginResponse,
     UserResponse,
     UserListResponse,
+    PaginatedUserListResponse,
     DeleteResponse,
     UserUpdate,
 )
@@ -90,30 +93,22 @@ def register_admin(user_input: UserCreate, session: Session = Depends(get_sessio
 
 @router.post("/admin/add-contractor", response_model=UserResponse)
 def add_contractor(
-    user_input: UserCreate,
+    contractor_input: ContractorCreate,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_admin),
 ):
-    db_user = User.model_validate(user_input)
-    db_user.role = UserRole.CONTRACTOR
-    
     # Check if email is already registered
-    existing_user = session.exec(select(User).where(User.email == user_input.email)).first()
+    existing_user = session.exec(select(User).where(User.email == contractor_input.email)).first()
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
-        
-    # Check if username is already registered
-    existing_username = session.exec(select(User).where(User.username == user_input.username)).first()
-    if existing_username:
-        raise HTTPException(status_code=400, detail="Username already registered")
-        
-    # Check if contractor_code is already registered
-    if user_input.contractor_code is not None:
-        existing_code = session.exec(select(User).where(User.contractor_code == user_input.contractor_code)).first()
-        if existing_code:
-            raise HTTPException(status_code=400, detail="Contractor code already registered")
-        
-    db_user.password = get_password_hash(user_input.password)
+
+    db_user = User(
+        email=contractor_input.email,
+        username=contractor_input.email,
+        full_name=contractor_input.email,
+        password=get_password_hash(contractor_input.password),
+        role=UserRole.CONTRACTOR,
+    )
     session.add(db_user)
     session.commit()
     session.refresh(db_user)
@@ -155,23 +150,39 @@ def list_users(
     session: Session = Depends(get_session),
     admin_user: User = Depends(get_current_admin),
 ):
-    users = session.exec(select(User).order_by(User.created_at.desc())).all()
+    users = session.exec(select(User)).all()
     return {"status": "success", "message": "User list fetched successfully", "user_data": users}
 
-@router.get("/admin/contractors", response_model=UserListResponse)
+@router.get("/admin/contractors", response_model=PaginatedUserListResponse)
 def list_contractors(
+    page: int = Query(1, ge=1, description="Page number"),
+    limit: int = Query(20, ge=1, le=100, description="Number of contractors per page"),
     session: Session = Depends(get_session),
     admin_user: User = Depends(get_current_admin),
 ):
-    contractors = session.exec(select(User).where(User.role == UserRole.CONTRACTOR).order_by(User.created_at.desc())).all()
-    return {"status": "success", "message": "Contractors list fetched successfully", "user_data": contractors}
+    query = select(User).where(User.role == UserRole.CONTRACTOR)
+    total = session.exec(
+        select(func.count()).select_from(User).where(User.role == UserRole.CONTRACTOR)
+    ).scalar_one()
+    offset = (page - 1) * limit
+    contractors = session.exec(query.offset(offset).limit(limit)).all()
+    total_pages = (total + limit - 1) // limit if total > 0 else 1
+    return {
+        "status": "success",
+        "message": "Contractors list fetched successfully",
+        "user_data": contractors,
+        "total": total,
+        "page": page,
+        "per_page": limit,
+        "total_pages": total_pages,
+    }
 
 @router.get("/admin/admins", response_model=UserListResponse)
 def list_admins(
     session: Session = Depends(get_session),
     admin_user: User = Depends(get_current_admin),
 ):
-    admins = session.exec(select(User).where(User.role == UserRole.ADMIN).order_by(User.created_at.desc())).all()
+    admins = session.exec(select(User).where(User.role == UserRole.ADMIN)).all()
     return {"status": "success", "message": "Admins list fetched successfully", "user_data": admins}
 
 class AddPointsRequest(BaseModel):
@@ -400,4 +411,4 @@ def get_contractor_earning_history_admin(
     contractor = session.get(User, contractor_id)
     if not contractor or contractor.role != UserRole.CONTRACTOR:
         raise HTTPException(status_code=404, detail="Contractor not found")
-    return get_contractor_earning_history(contractor_id, session)
+    return get_contractor_earning_history(contractor_id, session)

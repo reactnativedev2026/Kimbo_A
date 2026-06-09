@@ -4,6 +4,27 @@ from sqlmodel import Session, select
 from app.models import Notification, User, UserRole
 from firebase_admin import messaging
 
+def send_push_notification_to_token(token: str, title: str, message_content: str):
+    """Send an FCM push notification directly to the provided token."""
+    if not token or not token.strip():
+        return None
+
+    try:
+        message = messaging.Message(
+            notification=messaging.Notification(
+                title=title,
+                body=message_content,
+            ),
+            token=token.strip()
+        )
+        response = messaging.send(message)
+        logging.info(f"Successfully sent push notification to token: {response}")
+        return response
+    except Exception as e:
+        logging.error(f"Error sending push notification to token: {e}")
+        return None
+
+
 def send_push_notification(session: Session, user_id: int, title: str, message_content: str):
     """Fetch user's fcm_token and trigger Firebase Push Notification."""
     user = session.get(User, user_id)

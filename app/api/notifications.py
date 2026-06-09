@@ -1,9 +1,19 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from app.database import engine, get_session
-from app.utils.notifications import get_notifications, mark_notification_as_read, create_notification
-from app.models import Notification
-from app.schemas.notification_schema import NotificationListResponse, NotificationRead
+from app.utils.notifications import (
+    get_notifications,
+    mark_notification_as_read,
+    create_notification,
+    send_push_notification_to_token,
+)
+from app.models import Notification, User
+from app.schemas.notification_schema import (
+    NotificationListResponse,
+    NotificationRead,
+    NotificationTestRequest,
+    NotificationTestResponse,
+)
 from app.api.users import get_current_user
 
 router = APIRouter()
@@ -12,7 +22,7 @@ router = APIRouter()
 def list_notifications(
     only_unread: bool = False,
     session: Session = Depends(get_session),
-    current_user: dict = Depends(get_current_user)
+    current_user: User = Depends(get_current_user)
 ):
     notifications = get_notifications(session, current_user.id, only_unread)
     # Compute unread count
@@ -31,7 +41,7 @@ def list_notifications(
 def read_notification(
     notification_id: int,
     session: Session = Depends(get_session),
-    current_user: dict = Depends(get_current_user)
+    current_user: User = Depends(get_current_user)
 ):
     notif = mark_notification_as_read(session, notification_id, current_user.id)
     session.commit()
@@ -41,7 +51,7 @@ def read_notification(
 @router.post("/read-all", response_model=NotificationListResponse, summary="Mark all notifications as read", tags=["notifications"])
 def read_all_notifications(
     session: Session = Depends(get_session),
-    current_user: dict = Depends(get_current_user)
+    current_user: User = Depends(get_current_user)
 ):
     # Mark all as read
     notifications = session.exec(select(Notification).where(Notification.user_id == current_user.id)).all()
@@ -59,3 +69,23 @@ def read_all_notifications(
         data=notification_reads,
         unread_count=0,
     )
+
+@router.post("/send-test", response_model=NotificationTestResponse, summary="Send test FCM push notification using a token", tags=["notifications"])
+def send_test_notification(
+    payload: NotificationTestRequest,
+    current_user: User = Depends(get_current_user),
+):
+    """Send a test push notification directly to the provided FCM token."""
+    response = send_push_notification_to_token(payload.fcm_token, payload.title, payload.message)
+    if response is None:
+        return {
+            "status": "failed",
+            "message": "Push notification could not be sent. Check the FCM token and Firebase setup.",
+            "fcm_response": None,
+        }
+
+    return {
+        "status": "success",
+        "message": "Push notification sent successfully.",
+        "fcm_response": str(response),
+    }

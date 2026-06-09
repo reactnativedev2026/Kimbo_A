@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
+from sqlalchemy import and_, func
 from typing import List
 from app.database import engine, get_session
 from app.models import ProductType, Product, User
@@ -43,6 +44,28 @@ def get_product_types(
 ):
     types = session.exec(select(ProductType).where(ProductType.is_active == True).order_by(ProductType.created_at.desc())).all()
     type_reads = [ProductTypeRead.model_validate(t) if hasattr(ProductTypeRead, 'model_validate') else ProductTypeRead.from_orm(t) for t in types]
+    # Query active product types and count active products per type.
+    type_counts = {
+        row[0]: row[1]
+        for row in session.exec(
+            select(ProductType.id, func.count(Product.id))
+            .join(
+                Product,
+                and_(Product.product_type_id == ProductType.id, Product.is_active == True),
+                isouter=True,
+            )
+            .where(ProductType.is_active == True)
+            .group_by(ProductType.id)
+        ).all()
+    }
+
+    types = session.exec(select(ProductType).where(ProductType.is_active == True)).all()
+    type_reads = []
+    for t in types:
+        values = t.model_dump() if hasattr(t, 'model_dump') else t.__dict__
+        values['product_count'] = type_counts.get(t.id, 0)
+        type_reads.append(ProductTypeRead.model_validate(values) if hasattr(ProductTypeRead, 'model_validate') else ProductTypeRead(**values))
+
     return {
         "status": "success",
         "message": "Product types fetched",

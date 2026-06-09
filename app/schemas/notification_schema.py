@@ -15,3 +15,13 @@ class NotificationListResponse(SQLModel):
     message: str
     data: List[NotificationRead]
     unread_count: int
+
+class NotificationTestRequest(SQLModel):
+    fcm_token: str
+    title: str
+    message: str
+
+class NotificationTestResponse(SQLModel):
+    status: str
+    message: str
+    fcm_response: Optional[str] = None

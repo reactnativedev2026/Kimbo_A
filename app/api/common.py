@@ -16,7 +16,7 @@ from app.api.users import get_current_user
 router = APIRouter()
 
 def render_premium_html(title: str, content: str) -> str:
-    # Format linebreaks
+    # Format linebreaks and preserve paragraph spacing
     formatted_content = "".join([f"<p>{line}</p>" for line in content.split("\n") if line.strip()])
     
     return f"""<!DOCTYPE html>
@@ -24,17 +24,17 @@ def render_premium_html(title: str, content: str) -> str:
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{title} - Kimbo AI</title>
+    <title>{title} - SBBMS</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {{
-            --primary: #4F46E5;
-            --primary-hover: #4338CA;
-            --bg: #0F172A;
-            --surface: #1E293B;
-            --text-main: #F8FAFC;
-            --text-muted: #94A3B8;
-            --border: #334155;
+            --primary: #2F855A;
+            --secondary: #F6E05E;
+            --bg: #F8FAFC;
+            --surface: #FFFFFF;
+            --text-main: #0F172A;
+            --text-muted: #4A5568;
+            --border: #E2E8F0;
         }}
         
         * {{
@@ -47,7 +47,7 @@ def render_premium_html(title: str, content: str) -> str:
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: var(--bg);
             color: var(--text-main);
-            line-height: 1.7;
+            line-height: 1.8;
             padding: 2rem 1rem;
             display: flex;
             justify-content: center;
@@ -55,26 +55,48 @@ def render_premium_html(title: str, content: str) -> str:
         
         .container {{
             width: 100%;
-            max-width: 800px;
+            max-width: 900px;
             background-color: var(--surface);
             border: 1px solid var(--border);
             padding: 2.5rem;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+        }}
+        
+        .brand {{
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }}
+        
+        .brand-mark {{
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, #2F855A 0%, #38B2AC 100%);
+            border-radius: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #FFFFFF;
+            font-weight: 700;
+            font-size: 1rem;
         }}
         
         h1 {{
-            font-size: 2.2rem;
-            font-weight: 700;
-            color: #FFFFFF;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, #A5B4FC 0%, #6366F1 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            font-size: 2.4rem;
+            font-weight: 800;
+            margin-bottom: 0.25rem;
+        }}
+        
+        .subtitle {{
+            font-size: 1rem;
+            color: var(--text-muted);
+            margin-bottom: 1.75rem;
         }}
         
         .meta {{
-            font-size: 0.875rem;
+            font-size: 0.95rem;
             color: var(--text-muted);
             margin-bottom: 2rem;
             border-bottom: 1px solid var(--border);
@@ -84,17 +106,27 @@ def render_premium_html(title: str, content: str) -> str:
         .content {{
             font-size: 1.05rem;
             font-weight: 400;
-            color: #E2E8F0;
+            color: var(--text-main);
         }}
         
         .content p {{
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.4rem;
+        }}
+        
+        .content ul {{
+            margin-left: 1.2rem;
+            margin-bottom: 1.4rem;
+            color: var(--text-main);
+        }}
+        
+        .content li {{
+            margin-bottom: 0.75rem;
         }}
         
         .footer {{
             margin-top: 3rem;
             text-align: center;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             color: var(--text-muted);
             border-top: 1px solid var(--border);
             padding-top: 1.5rem;
@@ -103,13 +135,21 @@ def render_premium_html(title: str, content: str) -> str:
 </head>
 <body>
     <div class="container">
+        <div class="brand">
+            <div class="brand-mark">S</div>
+            <div>
+                <div style="font-size:1.1rem;font-weight:700;">SBBMS</div>
+                <div style="font-size:0.95rem;color:var(--text-muted);">Shri Balaj Building Material and Supplier</div>
+            </div>
+        </div>
         <h1>{title}</h1>
+        <div class="subtitle">Your trusted construction supplies partner.</div>
         <div class="meta">Last updated: {datetime.utcnow().strftime('%B %d, %Y')}</div>
         <div class="content">
             {formatted_content}
         </div>
         <div class="footer">
-            &copy; {datetime.utcnow().year} Kimbo AI. All rights reserved.
+            &copy; {datetime.utcnow().year} SBBMS. Shri Balaj Building Material and Supplier. All rights reserved.
         </div>
     </div>
 </body>
@@ -189,7 +229,39 @@ def get_terms_conditions_page(session: Session = Depends(get_session)):
     statement = select(StaticContent).where(StaticContent.key == "terms_conditions")
     content = session.exec(statement).first()
     title = content.title if content else "Terms and Conditions"
-    body_content = content.content if content else "Default Terms and Conditions. Content will be added shortly."
+    body_content = content.content if content else (
+        "Welcome to SBBMS (Shri Balaj Building Material and Supplier). "
+        "By using our services, you agree to the following terms and conditions. "
+        "Please read these terms carefully before placing any orders or using our platform.\n\n"
+        "1. Order Acceptance: Orders are subject to acceptance by SBBMS. We reserve the right to refuse or cancel any order for any reason, including pricing errors or product availability.\n\n"
+        "2. Pricing and Payments: All prices are shown in Indian Rupees. Payment must be completed at checkout. We accept the payment methods displayed on our platform.\n\n"
+        "3. Delivery and Shipping: Delivery timelines are estimates and may vary based on stock availability and location. SBBMS is not responsible for delays caused by third-party logistics partners.\n\n"
+        "4. Returns and Refunds: Returns are handled according to our return policy and may require prior approval. Refunds will be issued once the returned items are inspected.\n\n"
+        "5. User Responsibilities: Users must provide accurate information and keep their account details secure. Any misuse of the platform may result in account suspension.\n\n"
+        "6. Intellectual Property: All content, graphics, logos, and materials on the platform are the property of SBBMS and may not be used without permission.\n\n"
+        "7. Limitation of Liability: SBBMS is not liable for indirect, incidental, or consequential damages arising from the use of our services.\n\n"
+        "8. Changes to Terms: We may update these terms at any time. Users will be notified of material changes, and continued use of the service constitutes acceptance of the revised terms."
+    )
+    return HTMLResponse(content=render_premium_html(title, body_content), status_code=200)
+
+@router.get("/delete-account", response_class=HTMLResponse)
+def get_delete_account_page(session: Session = Depends(get_session)):
+    """
+    Render Delete Account guidance page as a beautiful responsive HTML page.
+    """
+    statement = select(StaticContent).where(StaticContent.key == "delete_account")
+    content = session.exec(statement).first()
+    title = content.title if content else "Delete Account"
+    body_content = content.content if content else (
+        "At SBBMS (Shri Balaj Building Material and Supplier), we respect your decision to close your account. "
+        "Please review the following information before proceeding.\n\n"
+        "1. Account Closure: When you request account deletion, your access to the SBBMS platform will be removed.\n\n"
+        "2. Data Retention: Certain information may be retained for legal, tax, or security reasons in accordance with our data retention policy.\n\n"
+        "3. Outstanding Orders: Any pending or active orders should be completed or canceled prior to requesting deletion.\n\n"
+        "4. Notifications: You will no longer receive order updates, promotional messages, or other notifications after the account is closed.\n\n"
+        "5. Contact Support: If you need help with deleting your account, please contact our support team through the support page.\n\n"
+        "To proceed with account deletion, log in to your account and follow the provided delete account workflow in the app."
+    )
     return HTMLResponse(content=render_premium_html(title, body_content), status_code=200)
 
 

@@ -20,6 +20,10 @@ class UserBase(SQLModel):
 class UserCreate(UserBase):
     password: str = Field(min_length=6)
 
+class ContractorCreate(SQLModel):
+    email: EmailStr
+    password: str
+
 class UserRead(UserBase):
     id: int
     total_tokens: int
@@ -46,6 +50,15 @@ class UserListResponse(SQLModel):
     status: str
     message: str
     user_data: list[UserRead]
+
+class PaginatedUserListResponse(SQLModel):
+    status: str
+    message: str
+    user_data: list[UserRead]
+    total: int
+    page: int
+    per_page: int
+    total_pages: int
 
 class DeleteResponse(SQLModel):
     status: str

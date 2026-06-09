@@ -9,6 +9,9 @@ from app.schemas.app_schemas import (
     PurchaseEntryWithProductRead, PurchaseEntryAdminRead, ProductDetail,
     ContractorDetail, PurchaseEntryWithProductResponse, PurchaseEntryAdminResponse
 )
+from app.models import PurchaseEntry, User, Product, PurchaseStatus, UserRole
+from app.schemas.app_schemas import PurchaseEntryCreate, PurchaseEntryResponse, PurchaseEntryRead, PurchaseEntryWithProductRead, PurchaseEntryAdminRead, ProductDetail, ContractorDetail
+from app.utils.notifications import create_notification
 from app.api.users import get_current_admin, get_current_contractor
 
 router = APIRouter()
@@ -42,6 +45,17 @@ def add_purchase_contractor(
     session.refresh(db_purchase)
 
     db_purchase.product = product
+    # Notify all admins about the new purchase request
+    admin_users = session.exec(select(User).where(User.role == UserRole.ADMIN)).all()
+    product_name = product.name if product else f"Product #{purchase_data.product_id}"
+    contractor_name = contractor_user.full_name or contractor_user.email
+    notification_message = (
+        f"New purchase request from {contractor_name}: "
+        f"{purchase_data.quantity_bought} x {product_name}."
+    )
+    for admin in admin_users:
+        create_notification(session, admin.id, "New Purchase Request", notification_message)
+    session.commit()
 
     return {
         "status": "success",

@@ -9,8 +9,8 @@ from app.migrations import run_migrations
 from app.api import images, users, transfers, purchases, schemes, rewards, dashboard, products, common, notifications
 
 app = FastAPI(
-    title="Kimbo AI API",
-    description="Backend API for Kimbo AI Application",
+    title="SBBMS API",
+    description="Backend API for SBBMS - Shri Balaj Building Material and Supplier",
     version="1.0.0"
 )
 import os
@@ -24,11 +24,47 @@ def seed_static_content():
     defaults = {
         "privacy_policy": {
             "title": "Privacy Policy",
-            "content": "This is the default Privacy Policy for Kimbo AI. Please modify this in the admin panel."
+            "content": (
+                "Welcome to SBBMS (Shri Balaj Building Material and Supplier). "
+                "We respect your privacy and are committed to protecting your personal information. "
+                "This policy describes how we collect, use, and safeguard your data when you use our services.\n\n"
+                "Information Collected: We may collect personal data such as name, email, phone number, shipping address, and billing details. "
+                "We also collect order history and communication preferences to improve our service.\n\n"
+                "Use of Information: Your data is used to process orders, provide support, improve products, and send important notifications related to your account. "
+                "We do not sell your personal information to third parties.\n\n"
+                "Security: We take reasonable steps to protect your data from unauthorized access, disclosure, or alteration. "
+                "However, no system is completely secure, and we encourage you to keep your account details safe.\n\n"
+                "Data Sharing: SBBMS may share information with service providers, logistics partners, or legal authorities when required. "
+                "This is only done to support order fulfillment, fraud prevention, or compliance with the law.\n\n"
+                "Your Rights: You can request access to your personal information, request corrections, or ask for account deletion. "
+                "Please contact our support team for any privacy-related requests."
+            )
         },
         "terms_conditions": {
             "title": "Terms and Conditions",
-            "content": "This is the default Terms and Conditions for Kimbo AI. Please modify this in the admin panel."
+            "content": (
+                "Welcome to SBBMS (Shri Balaj Building Material and Supplier). "
+                "By using our website or services, you agree to be bound by these terms and conditions.\n\n"
+                "Order Acceptance: Orders are subject to acceptance by SBBMS. We reserve the right to decline or cancel any order at our discretion.\n\n"
+                "Pricing and Payment: All product prices are displayed in Indian Rupees. Payment must be completed at checkout using approved payment methods.\n\n"
+                "Delivery: Delivery timelines are estimates and may vary based on location and logistics availability. SBBMS is not responsible for delays caused by third-party delivery services.\n\n"
+                "Returns and Refunds: Returns are handled based on our return policy. Approved returns will be processed after inspection, and refunds will be issued accordingly.\n\n"
+                "Account Responsibility: Users are responsible for keeping their account details secure and for all activity that occurs under their account.\n\n"
+                "Liability: SBBMS is not liable for indirect or consequential damages resulting from use of our services. Our liability is limited to the amount paid for the relevant order.\n\n"
+                "Changes to Terms: We may modify these terms at any time. Continued use of the platform constitutes acceptance of any revised terms."
+            )
+        },
+        "delete_account": {
+            "title": "Delete Account",
+            "content": (
+                "At SBBMS (Shri Balaj Building Material and Supplier), we respect your choice to close your account. "
+                "This page explains what happens when you delete your account.\n\n"
+                "Account Closure: Requesting account deletion will deactivate your access to SBBMS services and remove your ability to place new orders.\n\n"
+                "Data Retention: Certain records may be retained for legal, tax, or business purposes, even after account deletion.\n\n"
+                "Pending Orders: Please ensure any active or pending orders are resolved before deleting your account.\n\n"
+                "Notifications: You will stop receiving order updates, newsletters, and promotional messages after your account is deleted.\n\n"
+                "Support Contact: If you need assistance with deleting your account, contact our support team for guidance and confirmation."
+            )
         }
     }
     
