@@ -31,6 +31,7 @@ packaging==26.2
 pandas==3.0.3
 passlib==1.7.4
 pillow==12.2.0
+reportlab>=4.0.0
 protobuf==7.34.1
 pyarrow==24.0.0
 pydantic==2.13.4
