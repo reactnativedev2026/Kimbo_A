@@ -127,6 +127,10 @@ app.include_router(products.router, prefix="/products", tags=["Products"])
 app.include_router(common.router, prefix="/common", tags=["Common"])
 app.include_router(notifications.router, prefix="/notifications", tags=["notifications"])
 
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
+
 @app.get("/", response_class=HTMLResponse, tags=["Main"])
 def read_root():
     # Get path to index.html
