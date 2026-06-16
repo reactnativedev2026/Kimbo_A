@@ -59,12 +59,37 @@ async def upload_image(files: UploadFile = File(...)):
         import logging
         logging.error(f"Error uploading image to Cloudinary: {e}")
         raise HTTPException(status_code=500, detail=f"Image upload failed: {e}")
+    finally:
+        await files.close()
+
 @router.post("/uploadMultipleImage")
-async def upload_image(
+async def upload_multiple_images(
     files: Annotated[
         List[UploadFile], 
         File(description="Select multiple images")
     ]
 ):
-    return {"files": files}
+    uploaded_files = []
+    for file in files:
+        try:
+            public_id = os.path.splitext(file.filename)[0]
+            upload_result = cloudinary.uploader.upload(
+                file.file,
+                public_id=public_id
+            )
+            secure_url = upload_result.get("secure_url")
+            uploaded_files.append({
+                "filename": file.filename,
+                "content_type": file.content_type,
+                "url": secure_url
+            })
+        except Exception as e:
+            import logging
+            logging.error(f"Error uploading image to Cloudinary: {e}")
+            raise HTTPException(status_code=500, detail=f"Image upload failed: {e}")
+        finally:
+            await file.close()
+            
+    return {"files": uploaded_files}
+
 

@@ -42,8 +42,6 @@ def get_product_types(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user) # Anyone can view active types
 ):
-    types = session.exec(select(ProductType).where(ProductType.is_active == True).order_by(ProductType.created_at.desc())).all()
-    type_reads = [ProductTypeRead.model_validate(t) if hasattr(ProductTypeRead, 'model_validate') else ProductTypeRead.from_orm(t) for t in types]
     # Query active product types and count active products per type.
     type_counts = {
         row[0]: row[1]
@@ -59,7 +57,7 @@ def get_product_types(
         ).all()
     }
 
-    types = session.exec(select(ProductType).where(ProductType.is_active == True)).all()
+    types = session.exec(select(ProductType).where(ProductType.is_active == True).order_by(ProductType.created_at.desc())).all()
     type_reads = []
     for t in types:
         values = t.model_dump() if hasattr(t, 'model_dump') else t.__dict__

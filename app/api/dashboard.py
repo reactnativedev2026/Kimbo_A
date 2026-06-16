@@ -6,6 +6,7 @@ from app.database import engine, get_session
 from app.models import User, UserRole, MaterialTransfer, PurchaseEntry, PurchaseStatus, Scheme, RewardRedeem, Product
 from app.schemas.app_schemas import AdminDashboardStats, ContractorDashboardStats, EarningChartItem, RecentPurchaseItem
 from app.api.users import get_current_user
+from sqlalchemy import func
 
 router = APIRouter()
 
@@ -17,19 +18,22 @@ def get_admin_dashboard(
     if current_user.role != UserRole.ADMIN:
         raise HTTPException(status_code=403, detail="Admin access required")
 
-    total_contractors = len(session.exec(select(User).where(User.role == UserRole.CONTRACTOR)).all())
-    total_approved_purchases = len(session.exec(
-        select(PurchaseEntry).where(PurchaseEntry.status == PurchaseStatus.APPROVED)
-    ).all())
-    total_redeemed = len(session.exec(select(RewardRedeem)).all())
-    active_schemes = len(session.exec(select(Scheme).where(Scheme.is_active == True)).all())
+    total_contractors = session.exec(select(func.count(User.id)).where(User.role == UserRole.CONTRACTOR)).one()
+    total_approved_purchases = session.exec(
+        select(func.count(PurchaseEntry.id)).where(PurchaseEntry.status == PurchaseStatus.APPROVED)
+    ).one()
+    total_redeemed = session.exec(select(func.count(RewardRedeem.id))).one()
+    active_schemes = session.exec(select(func.count(Scheme.id)).where(Scheme.is_active == True)).one()
 
-    # Fetch all approved purchases for chart data
-    approved_purchases = session.exec(
-        select(PurchaseEntry).where(PurchaseEntry.status == PurchaseStatus.APPROVED)
-    ).all()
-
+    # Fetch approved purchases for chart data (last 180 days to avoid OOM)
     now = datetime.utcnow()
+    cutoff_date = now - timedelta(days=180)
+    approved_purchases = session.exec(
+        select(PurchaseEntry).where(
+            PurchaseEntry.status == PurchaseStatus.APPROVED,
+            PurchaseEntry.date >= cutoff_date
+        )
+    ).all()
 
     # --- Daily earnings (last 7 days) ---
     daily_map = defaultdict(float)
@@ -116,11 +120,11 @@ def get_contractor_dashboard(
     if current_user.role != UserRole.CONTRACTOR:
         raise HTTPException(status_code=403, detail="Contractor access required")
 
-    total_purchases = len(session.exec(select(PurchaseEntry).where(PurchaseEntry.contractor_id == current_user.id)).all())
-    pending_redeems = len(session.exec(select(RewardRedeem).where(
+    total_purchases = session.exec(select(func.count(PurchaseEntry.id)).where(PurchaseEntry.contractor_id == current_user.id)).one()
+    pending_redeems = session.exec(select(func.count(RewardRedeem.id)).where(
         RewardRedeem.contractor_id == current_user.id,
         RewardRedeem.status == "pending"
-    )).all())
+    )).one()
 
     return {
         "total_tokens": current_user.total_tokens,

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
+from sqlalchemy import func
 from app.database import get_session
 from app.utils.notifications import (
     get_notifications,
@@ -25,8 +26,8 @@ def list_notifications(
 ):
     notifications = get_notifications(session, current_user.id, only_unread)
     # Compute unread count
-    unread_query = select(Notification).where(Notification.user_id == current_user.id, Notification.is_read == False)
-    unread_count = len(session.exec(unread_query).all())
+    unread_query = select(func.count(Notification.id)).where(Notification.user_id == current_user.id, Notification.is_read == False)
+    unread_count = session.exec(unread_query).one()
     # Convert to response schema
     notification_reads = [NotificationRead(**(n.model_dump() if hasattr(n, 'model_dump') else n.dict())) for n in notifications]
     return NotificationListResponse(
