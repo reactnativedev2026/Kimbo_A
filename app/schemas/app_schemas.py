@@ -55,6 +55,7 @@ class PurchaseEntryRead(PurchaseEntryBase):
     total_amount: float
     payment_method: Optional[str] = None
     transaction_id: Optional[str] = None
+    pdf_url: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 
@@ -78,21 +79,18 @@ class PurchaseEntryResponse(SQLModel):
     status: str
     message: str
     data: PurchaseEntryRead
-    bill_html: Optional[str] = None
     pdf_url: Optional[str] = None
 
 class PurchaseEntryWithProductResponse(SQLModel):
     status: str
     message: str
     data: PurchaseEntryWithProductRead
-    bill_html: Optional[str] = None
     pdf_url: Optional[str] = None
 
 class PurchaseEntryAdminResponse(SQLModel):
     status: str
     message: str
     data: PurchaseEntryAdminRead
-    bill_html: Optional[str] = None
     pdf_url: Optional[str] = None
 
 # Scheme Schemas

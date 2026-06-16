@@ -8,7 +8,7 @@ from sqlalchemy import func
 from pydantic import BaseModel
 
 from app.database import engine, create_db_and_tables, get_session
-from app.models import User, UserRole, MaterialTransfer, PurchaseEntry, RewardRedeem, AdminPointAdjustment, Product, PurchaseStatus
+from app.models import User, UserRole, UserStatus, MaterialTransfer, PurchaseEntry, RewardRedeem, AdminPointAdjustment, Product, PurchaseStatus
 from app.schemas.user_schema import (
     UserCreate,
     ContractorCreate,
@@ -51,6 +51,8 @@ def get_current_user(
     user = session.exec(select(User).where(User.email == email)).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+    if user.status != UserStatus.ACTIVE:
+        raise HTTPException(status_code=403, detail="User account is inactive. Access denied.")
     return user
 
 def get_current_admin(current_user: User = Depends(get_current_user)) -> User:
@@ -120,6 +122,8 @@ def login_user(login_data: UserLogin, session: Session = Depends(get_session)):
     user = session.exec(select(User).where(User.email == login_data.email)).first()
     if not user or not verify_password(login_data.password, user.password):
         raise HTTPException(status_code=401, detail="Invalid email or password")
+    if user.status != UserStatus.ACTIVE:
+        raise HTTPException(status_code=403, detail="User account is inactive. Login denied.")
         
     # Update FCM token and device type if provided
     updated = False

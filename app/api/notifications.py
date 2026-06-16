@@ -1,10 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
-from app.database import engine, get_session
+from app.database import get_session
 from app.utils.notifications import (
     get_notifications,
     mark_notification_as_read,
-    create_notification,
     send_push_notification_to_token,
 )
 from app.models import Notification, User
