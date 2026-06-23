@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Account - SBBMS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2d6a4f;
+            --primary-hover: #1b4332;
+            --primary-light: #d8f3dc;
+            --danger: #e63946;
+            --danger-hover: #c1121f;
+            --danger-light: #ffe5ec;
+            --bg: #f8f9fa;
+            --surface: #ffffff;
+            --text-main: #1a1a1a;
+            --text-muted: #5c677d;
+            --border: #dee2e6;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 650px;
+            background-color: var(--surface);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            border: 1px solid rgba(0, 0, 0, 0.03);
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, #40916c 100%);
+            padding: 2.5rem 2rem;
+            color: white;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .brand-logo {
+            width: 50px;
+            height: 50px;
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: white;
+            margin: 0 auto 1rem auto;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .content {
+            padding: 2rem 2rem;
+        }
+
+        .warning-box {
+            background-color: var(--danger-light);
+            border-left: 4px solid var(--danger);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .warning-box h3 {
+            color: var(--danger-hover);
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .warning-box p {
+            color: #590d22;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .info-list {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+
+        .info-list li {
+            position: relative;
+            padding-left: 1.75rem;
+            margin-bottom: 0.85rem;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+        }
+
+        .info-list li::before {
+            content: "•";
+            color: var(--primary);
+            font-size: 1.5rem;
+            position: absolute;
+            left: 0.5rem;
+            top: -0.25rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            font-family: inherit;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            background-color: #fdfdfd;
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            transition: var(--transition);
+            outline: none;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            background-color: white;
+            box-shadow: 0 0 0 4px rgba(45, 106, 79, 0.1);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin: 1.5rem 0;
+            cursor: pointer;
+        }
+
+        .checkbox-group input {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+            margin-top: 0.2rem;
+            cursor: pointer;
+        }
+
+        .checkbox-group label {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .checkbox-group label span {
+            color: var(--danger);
+            font-weight: 600;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--danger) 0%, var(--danger-hover) 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 15px rgba(230, 57, 70, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(230, 57, 70, 0.3);
+            background: linear-gradient(135deg, var(--danger-hover) 0%, #b70918 100%);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .btn-submit:disabled {
+            background: #cbd5e1;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 1.5rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border);
+            background-color: #fafbfc;
+        }
+
+        .footer a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Success & Error message containers */
+        .response-container {
+            display: none;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .response-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem auto;
+            font-size: 2.5rem;
+        }
+
+        .success-icon {
+            background-color: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .error-icon {
+            background-color: var(--danger-light);
+            color: var(--danger);
+        }
+
+        .response-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 0.75rem;
+        }
+
+        .response-desc {
+            color: var(--text-muted);
+            font-size: 1rem;
+            margin-bottom: 2rem;
+            line-height: 1.5;
+        }
+
+        .btn-secondary {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background-color: #f1f5f9;
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .btn-secondary:hover {
+            background-color: #e2e8f0;
+        }
+
+        /* Spinner for loading state */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <!-- Main Form & Content -->
+        <div id="main-content">
+            <div class="header">
+                <div class="brand-logo">S</div>
+                <h1>SBBMS</h1>
+                <p>Shri Balaj Building Material and Supplier</p>
+            </div>
+
+            <div class="content">
+                <div class="warning-box">
+                    <h3>
+                        <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16"
+                            style="display:inline-block;vertical-align:middle;">
+                            <path
+                                d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+                        </svg>
+                        Important Notice
+                    </h3>
+                    <p>Deleting your account is permanent. All your order histories, accrued reward tokens, points,
+                        active schemes, and profile information will be permanently deleted and cannot be recovered.</p>
+                </div>
+
+                <div class="section-title">What Deleting Your Account Means</div>
+                <ul class="info-list">
+                    <li>Your access to the SBBMS application will be immediately revoked.</li>
+                    <li>Any pending rewards or token redemptions will be forfeited.</li>
+                    <li>For legal, compliance, and tax purposes, transaction history (such as material transfers and
+                        purchases) may be retained as required by regulatory authorities.</li>
+                    <li>Your personal identifiers (full name, phone number, email, address) will be wiped out from
+                        active profile records.</li>
+                </ul>
+
+                <hr style="border: 0; border-top: 1px solid var(--border); margin: 2rem 0;">
+
+                <div class="section-title">Submit Deletion Request</div>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+                    Please fill out the form below to verify your identity and submit an account deletion request.
+                </p>
+
+                <form id="delete-form">
+                    <div class="form-group">
+                        <label for="fullName">Full Name</label>
+                        <input type="text" id="fullName" class="form-control" placeholder="Enter your full name"
+                            required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Registered Email Address</label>
+                        <input type="email" id="email" class="form-control" placeholder="example@email.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Registered Mobile Number (with Country Code)</label>
+                        <input type="tel" id="phone" class="form-control" placeholder="e.g. +91 98765 43210" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reason">Reason for Account Deletion</label>
+                        <select id="reason" class="form-control" required>
+                            <option value="" disabled selected>Select a reason...</option>
+                            <option value="No longer using the services">I no longer use SBBMS services / app</option>
+                            <option value="Privacy and data safety concerns">I have privacy or data safety concerns
+                            </option>
+                            <option value="Switching to another supplier">Switching to another supplier</option>
+                            <option value="Technical issues or bugs in the app">Experiencing technical issues / bugs
+                            </option>
+                            <option value="Other">Other (please specify below)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="other-reason-group" style="display: none;">
+                        <label for="otherReason">Please specify your reason</label>
+                        <textarea id="otherReason" class="form-control"
+                            placeholder="Describe the reason for deleting your account..."></textarea>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="consent" required>
+                        <label for="consent">
+                            I understand and agree that my account deletion request is <span>irreversible</span> and
+                            will result in the loss of all my earned tokens, rewards, and status.
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn-submit" id="submit-btn">
+                        <span class="spinner" id="btn-spinner"></span>
+                        <span id="btn-text">Permanently Delete My Account</span>
+                    </button>
+                </form>
+            </div>
+
+            <div class="footer">
+                Need help? <a href="/common/privacy-policy" target="_blank">Privacy Policy</a> &nbsp;•&nbsp; <a
+                    href="/common/terms-conditions" target="_blank">Terms & Conditions</a>
+            </div>
+        </div>
+
+        <!-- Success Response Container -->
+        <div id="success-content" class="response-container">
+            <div class="response-icon success-icon">✓</div>
+            <h2 class="response-title">Request Submitted</h2>
+            <p class="response-desc">
+                Your account deletion request has been successfully registered. To comply with security protocols and
+                resolve any active transactions, our support team will verify your details and process the deletion
+                within <strong>7 business days</strong>. A confirmation email will be sent once the process is complete.
+            </p>
+            <a href="/common/delete-account" class="btn-secondary">Back to Home</a>
+        </div>
+
+        <!-- Error Response Container -->
+        <div id="error-content" class="response-container">
+            <div class="response-icon error-icon">✕</div>
+            <h2 class="response-title">Submission Failed</h2>
+            <p class="response-desc" id="error-message">
+                Something went wrong while processing your request. Please check your network connection and try again.
+            </p>
+            <button onclick="resetForm()" class="btn-secondary" style="cursor: pointer; border: none;">Try
+                Again</button>
+        </div>
+    </div>
+
+    <script>
+        const reasonSelect = document.getElementById('reason');
+        const otherReasonGroup = document.getElementById('other-reason-group');
+        const otherReasonText = document.getElementById('otherReason');
+        const deleteForm = document.getElementById('delete-form');
+        const submitBtn = document.getElementById('submit-btn');
+        const btnSpinner = document.getElementById('btn-spinner');
+        const btnText = document.getElementById('btn-text');
+
+        const mainContent = document.getElementById('main-content');
+        const successContent = document.getElementById('success-content');
+        const errorContent = document.getElementById('error-content');
+        const errorMessage = document.getElementById('error-message');
+
+        // Show/hide other reason text area based on dropdown selection
+        reasonSelect.addEventListener('change', function () {
+            if (this.value === 'Other') {
+                otherReasonGroup.style.display = 'block';
+                otherReasonText.setAttribute('required', 'required');
+            } else {
+                otherReasonGroup.style.display = 'none';
+                otherReasonText.removeAttribute('required');
+            }
+        });
+
+        // Submit form
+        deleteForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            // Toggle loading state
+            submitBtn.disabled = true;
+            btnSpinner.style.display = 'inline-block';
+            btnText.textContent = 'Processing...';
+
+            const name = document.getElementById('fullName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const selectedReason = reasonSelect.value;
+            const customReason = otherReasonText.value.trim();
+
+            const messageReason = selectedReason === 'Other' ? `Other: ${customReason}` : selectedReason;
+            const messageBody = `ACCOUNT DELETION REQUEST VIA PLAY STORE COMPLIANCE PAGE.
+Name: ${name}
+Email: ${email}
+Phone: ${phone}
+Reason: ${messageReason}
+Consent: User checked confirmation of permanent loss of tokens, rewards and status.`;
+
+            const payload = {
+                name: name,
+                email: email,
+                phone: phone,
+                subject: "Account Deletion Request",
+                message: messageBody
+            };
+
+            try {
+                const response = await fetch('/common/support', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    // Success
+                    mainContent.style.display = 'none';
+                    successContent.style.display = 'block';
+                } else {
+                    // Error response from server
+                    const data = await response.json().catch(() => ({}));
+                    const detail = data.detail || 'Server responded with an error.';
+                    showError(`Failed to submit request: ${detail}`);
+                }
+            } catch (err) {
+                // Network error
+                showError('Network error. Please verify you are connected to the internet and try again.');
+            }
+        });
+
+        function showError(msg) {
+            mainContent.style.display = 'none';
+            successContent.style.display = 'none';
+            errorContent.style.display = 'block';
+            errorMessage.textContent = msg;
+        }
+
+        function resetForm() {
+            // Reset state
+            submitBtn.disabled = false;
+            btnSpinner.style.display = 'none';
+            btnText.textContent = 'Permanently Delete My Account';
+
+            errorContent.style.display = 'none';
+            successContent.style.display = 'none';
+            mainContent.style.display = 'block';
+        }
+    </script>
+</body>
+
+</html>

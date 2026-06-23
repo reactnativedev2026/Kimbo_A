@@ -215,54 +215,84 @@ def get_privacy_policy_page(session: Session = Depends(get_session)):
     """
     Render Privacy Policy as a beautiful responsive HTML page.
     """
-    statement = select(StaticContent).where(StaticContent.key == "privacy_policy")
-    content = session.exec(statement).first()
-    title = content.title if content else "Privacy Policy"
-    body_content = content.content if content else "Default Privacy Policy. Content will be added shortly."
-    return HTMLResponse(content=render_premium_html(title, body_content), status_code=200)
+    import os
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    app_dir = os.path.dirname(current_dir)
+    html_file_path = os.path.join(app_dir, "privacy_policy.html")
+    
+    try:
+        with open(html_file_path, "r", encoding="utf-8") as file:
+            html_content = file.read()
+        return HTMLResponse(content=html_content, status_code=200)
+    except FileNotFoundError:
+        statement = select(StaticContent).where(StaticContent.key == "privacy_policy")
+        content = session.exec(statement).first()
+        title = content.title if content else "Privacy Policy"
+        body_content = content.content if content else "Default Privacy Policy. Content will be added shortly."
+        return HTMLResponse(content=render_premium_html(title, body_content), status_code=200)
 
 @router.get("/terms-conditions", response_class=HTMLResponse)
 def get_terms_conditions_page(session: Session = Depends(get_session)):
     """
     Render Terms and Conditions as a beautiful responsive HTML page.
     """
-    statement = select(StaticContent).where(StaticContent.key == "terms_conditions")
-    content = session.exec(statement).first()
-    title = content.title if content else "Terms and Conditions"
-    body_content = content.content if content else (
-        "Welcome to SBBMS (Shri Balaj Building Material and Supplier). "
-        "By using our services, you agree to the following terms and conditions. "
-        "Please read these terms carefully before placing any orders or using our platform.\n\n"
-        "1. Order Acceptance: Orders are subject to acceptance by SBBMS. We reserve the right to refuse or cancel any order for any reason, including pricing errors or product availability.\n\n"
-        "2. Pricing and Payments: All prices are shown in Indian Rupees. Payment must be completed at checkout. We accept the payment methods displayed on our platform.\n\n"
-        "3. Delivery and Shipping: Delivery timelines are estimates and may vary based on stock availability and location. SBBMS is not responsible for delays caused by third-party logistics partners.\n\n"
-        "4. Returns and Refunds: Returns are handled according to our return policy and may require prior approval. Refunds will be issued once the returned items are inspected.\n\n"
-        "5. User Responsibilities: Users must provide accurate information and keep their account details secure. Any misuse of the platform may result in account suspension.\n\n"
-        "6. Intellectual Property: All content, graphics, logos, and materials on the platform are the property of SBBMS and may not be used without permission.\n\n"
-        "7. Limitation of Liability: SBBMS is not liable for indirect, incidental, or consequential damages arising from the use of our services.\n\n"
-        "8. Changes to Terms: We may update these terms at any time. Users will be notified of material changes, and continued use of the service constitutes acceptance of the revised terms."
-    )
-    return HTMLResponse(content=render_premium_html(title, body_content), status_code=200)
+    import os
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    app_dir = os.path.dirname(current_dir)
+    html_file_path = os.path.join(app_dir, "terms_conditions.html")
+    
+    try:
+        with open(html_file_path, "r", encoding="utf-8") as file:
+            html_content = file.read()
+        return HTMLResponse(content=html_content, status_code=200)
+    except FileNotFoundError:
+        statement = select(StaticContent).where(StaticContent.key == "terms_conditions")
+        content = session.exec(statement).first()
+        title = content.title if content else "Terms and Conditions"
+        body_content = content.content if content else (
+            "Welcome to SBBMS (Shri Balaj Building Material and Supplier). "
+            "By using our services, you agree to the following terms and conditions. "
+            "Please read these terms carefully before placing any orders or using our platform.\n\n"
+            "1. Order Acceptance: Orders are subject to acceptance by SBBMS. We reserve the right to refuse or cancel any order for any reason, including pricing errors or product availability.\n\n"
+            "2. Pricing and Payments: All prices are shown in Indian Rupees. Payment must be completed at checkout. We accept the payment methods displayed on our platform.\n\n"
+            "3. Delivery and Shipping: Delivery timelines are estimates and may vary based on stock availability and location. SBBMS is not responsible for delays caused by third-party logistics partners.\n\n"
+            "4. Returns and Refunds: Returns are handled according to our return policy and may require prior approval. Refunds will be issued once the returned items are inspected.\n\n"
+            "5. User Responsibilities: Users must provide accurate information and keep their account details secure. Any misuse of the platform may result in account suspension.\n\n"
+            "6. Intellectual Property: All content, graphics, logos, and materials on the platform are the property of SBBMS and may not be used without permission.\n\n"
+            "7. Limitation of Liability: SBBMS is not liable for indirect, incidental, or consequential damages arising from the use of our services.\n\n"
+            "8. Changes to Terms: We may update these terms at any time. Users will be notified of material changes, and continued use of the service constitutes acceptance of the revised terms."
+        )
+        return HTMLResponse(content=render_premium_html(title, body_content), status_code=200)
 
 @router.get("/delete-account", response_class=HTMLResponse)
 def get_delete_account_page(session: Session = Depends(get_session)):
     """
-    Render Delete Account guidance page as a beautiful responsive HTML page.
+    Render Delete Account interactive request page as a beautiful responsive HTML page.
     """
-    statement = select(StaticContent).where(StaticContent.key == "delete_account")
-    content = session.exec(statement).first()
-    title = content.title if content else "Delete Account"
-    body_content = content.content if content else (
-        "At SBBMS (Shri Balaj Building Material and Supplier), we respect your decision to close your account. "
-        "Please review the following information before proceeding.\n\n"
-        "1. Account Closure: When you request account deletion, your access to the SBBMS platform will be removed.\n\n"
-        "2. Data Retention: Certain information may be retained for legal, tax, or security reasons in accordance with our data retention policy.\n\n"
-        "3. Outstanding Orders: Any pending or active orders should be completed or canceled prior to requesting deletion.\n\n"
-        "4. Notifications: You will no longer receive order updates, promotional messages, or other notifications after the account is closed.\n\n"
-        "5. Contact Support: If you need help with deleting your account, please contact our support team through the support page.\n\n"
-        "To proceed with account deletion, log in to your account and follow the provided delete account workflow in the app."
-    )
-    return HTMLResponse(content=render_premium_html(title, body_content), status_code=200)
+    import os
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    app_dir = os.path.dirname(current_dir)
+    html_file_path = os.path.join(app_dir, "delete_account.html")
+    
+    try:
+        with open(html_file_path, "r", encoding="utf-8") as file:
+            html_content = file.read()
+        return HTMLResponse(content=html_content, status_code=200)
+    except FileNotFoundError:
+        statement = select(StaticContent).where(StaticContent.key == "delete_account")
+        content = session.exec(statement).first()
+        title = content.title if content else "Delete Account"
+        body_content = content.content if content else (
+            "At SBBMS (Shri Balaj Building Material and Supplier), we respect your decision to close your account. "
+            "Please review the following information before proceeding.\n\n"
+            "1. Account Closure: When you request account deletion, your access to the SBBMS platform will be removed.\n\n"
+            "2. Data Retention: Certain information may be retained for legal, tax, or security reasons in accordance with our data retention policy.\n\n"
+            "3. Outstanding Orders: Any pending or active orders should be completed or canceled prior to requesting deletion.\n\n"
+            "4. Notifications: You will no longer receive order updates, promotional messages, or other notifications after the account is closed.\n\n"
+            "5. Contact Support: If you need help with deleting your account, please contact our support team through the support page.\n\n"
+            "To proceed with account deletion, log in to your account and follow the provided delete account workflow in the app."
+        )
+        return HTMLResponse(content=render_premium_html(title, body_content), status_code=200)
 
 
 # ----------------- SUPPORT TICKETS ENDPOINTS -----------------
@@ -326,6 +356,17 @@ def update_support_ticket_status(
     db_ticket.status = payload.status
     session.commit()
     session.refresh(db_ticket)
+
+    # Send push notification to user if registered
+    if db_ticket.user_id:
+        from app.utils.notifications import create_notification
+        create_notification(
+            session,
+            db_ticket.user_id,
+            "Support Ticket Updated",
+            f"Your support ticket #{db_ticket.id} status has been updated to {payload.status}."
+        )
+        session.commit()
     
     return {
         "status": "success",

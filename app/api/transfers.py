@@ -26,6 +26,16 @@ def create_transfer_admin(
     session.commit()
     session.refresh(db_transfer)
 
+    # Send a notification to the contractor
+    from app.utils.notifications import create_notification
+    create_notification(
+        session,
+        contractor.id,
+        "Material Transfer Recorded",
+        f"A new material transfer has been recorded: {db_transfer.quantity} {db_transfer.unit} of {db_transfer.material_type}."
+    )
+    session.commit()
+
     return {
         "status": "success",
         "message": "Material transfer recorded successfully",
