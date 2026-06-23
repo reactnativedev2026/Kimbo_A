@@ -1,7 +1,10 @@
 import os
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
+from fastapi.openapi.utils import get_openapi
 from sqlmodel import Session 
 
 from app.database import engine, create_db_and_tables
@@ -11,7 +14,10 @@ from app.api import images, users, transfers, purchases, schemes, rewards, dashb
 app = FastAPI(
     title="SBBMS API",
     description="Backend API for SBBMS - Shri Balaj Building Material and Supplier",
-    version="1.0.0"
+    version="1.0.0",
+    docs_url=None,
+    redoc_url=None,
+    openapi_url=None
 )
 import os
 os.makedirs("uploads", exist_ok=True)
@@ -111,6 +117,32 @@ def on_startup():
     seed_static_content()
     init_firebase()
     
+    # Start scheduled daily database backup to Cloudinary in the background
+    import asyncio
+    from app.utils.backup import run_backup
+    
+    async def schedule_daily_backup():
+        # Delay initial backup on boot by 30 seconds to let the server initialize fully
+        await asyncio.sleep(30)
+        while True:
+            try:
+                print("[BACKUP] Starting scheduled daily database backup to Cloudinary...")
+                res = run_backup()
+                print(f"[BACKUP] Backup result: {res}")
+            except Exception as e:
+                print(f"[BACKUP] Error in scheduled daily backup: {e}")
+            # Wait for 24 hours
+            await asyncio.sleep(86400)
+            
+    try:
+        loop = asyncio.get_running_loop()
+        loop.create_task(schedule_daily_backup())
+        print("[BACKUP] Scheduled daily database backup background task initialized.")
+    except RuntimeError:
+        # Fallback if no loop is running yet (starts the task via create_task after startup)
+        asyncio.create_task(schedule_daily_backup())
+        print("[BACKUP] Scheduled daily database backup background task initialized via fallback.")
+    
 def get_session():
     with Session(engine) as session:
         yield session
@@ -126,6 +158,31 @@ app.include_router(dashboard.router, prefix="/dashboard", tags=["Dashboard"])
 app.include_router(products.router, prefix="/products", tags=["Products"])
 app.include_router(common.router, prefix="/common", tags=["Common"])
 app.include_router(notifications.router, prefix="/notifications", tags=["notifications"])
+
+security_basic = HTTPBasic()
+
+def get_current_username(credentials: HTTPBasicCredentials = Depends(security_basic)):
+    correct_username = os.getenv("DOCS_USERNAME", "admin")
+    correct_password = os.getenv("DOCS_PASSWORD", "admin123")
+    if credentials.username != correct_username or credentials.password != correct_password:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    return credentials.username
+
+@app.get("/docs", include_in_schema=False)
+async def get_swagger_documentation(username: str = Depends(get_current_username)):
+    return get_swagger_ui_html(openapi_url="/openapi.json", title="SBBMS API - Swagger UI")
+
+@app.get("/redoc", include_in_schema=False)
+async def get_redoc_documentation(username: str = Depends(get_current_username)):
+    return get_redoc_html(openapi_url="/openapi.json", title="SBBMS API - ReDoc")
+
+@app.get("/openapi.json", include_in_schema=False)
+async def get_open_api_endpoint(username: str = Depends(get_current_username)):
+    return get_openapi(title=app.title, version=app.version, routes=app.routes)
 
 @app.get("/health")
 async def health():

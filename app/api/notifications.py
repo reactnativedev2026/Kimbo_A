@@ -89,3 +89,22 @@ def send_test_notification(
         "message": "Push notification sent successfully.",
         "fcm_response": str(response),
     }
+
+@router.post("/send-public-test", response_model=NotificationTestResponse, summary="Send test FCM push notification publicly (No Authentication Required)", tags=["notifications"])
+def send_public_test_notification(
+    payload: NotificationTestRequest
+):
+    """Send a test push notification publicly using an FCM token without requiring credentials."""
+    response = send_push_notification_to_token(payload.fcm_token, payload.title, payload.message)
+    if response is None:
+        return {
+            "status": "failed",
+            "message": "Push notification could not be sent. Check the FCM token and Firebase setup.",
+            "fcm_response": None,
+        }
+
+    return {
+        "status": "success",
+        "message": "Push notification sent successfully.",
+        "fcm_response": str(response),
+    }

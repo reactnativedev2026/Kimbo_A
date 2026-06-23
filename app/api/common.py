@@ -488,3 +488,19 @@ def delete_faq(
         "message": "FAQ deleted successfully",
         "deleted_id": faq_id
     }
+
+@router.post("/admin/backup-db", tags=["Admin"])
+def backup_database(
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Trigger manual database backup and upload it to Cloudinary (Admin only).
+    """
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Only admins can backup the database.")
+        
+    from app.utils.backup import run_backup
+    result = run_backup()
+    if result.get("status") == "failed":
+        raise HTTPException(status_code=500, detail=result.get("error"))
+    return result
