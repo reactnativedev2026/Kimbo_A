@@ -136,9 +136,9 @@ def generate_purchase_pdf(
     )
 
     contractor_info_data = [
-        [Paragraph("Contractor Name", muted_style), Paragraph(contractor.full_name if contractor else "Unknown Contractor", normal_style)],
-        [Paragraph("Mobile Number", muted_style), Paragraph(contractor.mobile_number if contractor else "N/A", normal_style)],
-        [Paragraph("Contractor Code", muted_style), Paragraph(contractor.contractor_code if contractor else "N/A", normal_style)],
+        [Paragraph("Contractor Name", muted_style), Paragraph((contractor.full_name or "Unknown Contractor") if contractor else "Unknown Contractor", normal_style)],
+        [Paragraph("Mobile Number", muted_style), Paragraph((contractor.mobile_number or "N/A") if contractor else "N/A", normal_style)],
+        [Paragraph("Contractor Code", muted_style), Paragraph((contractor.contractor_code or "N/A") if contractor else "N/A", normal_style)],
     ]
     contractor_info_table = Table(contractor_info_data, colWidths=[90 * mm, 80 * mm])
     contractor_info_table.setStyle(
