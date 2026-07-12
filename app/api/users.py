@@ -104,10 +104,14 @@ def add_contractor(
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
 
+    # Username fallback
+    username = contractor_input.username or contractor_input.email
+    full_name = contractor_input.full_name or contractor_input.email
+
     db_user = User(
-        email=contractor_input.email,
-        username=contractor_input.email,
-        full_name=contractor_input.email,
+        **contractor_input.dict(exclude={"password", "role", "username", "full_name"}),
+        username=username,
+        full_name=full_name,
         password=get_password_hash(contractor_input.password),
         role=UserRole.CONTRACTOR,
     )

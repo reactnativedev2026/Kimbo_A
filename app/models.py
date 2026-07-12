@@ -18,7 +18,7 @@ class User(SQLModel, table=True):
     role: UserRole = Field(default=UserRole.CONTRACTOR)
     
     # Contractor / User Details
-    username: str = Field(unique=True)
+    username: str
     email: str = Field(unique=True)
     full_name: str
     password: str

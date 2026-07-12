@@ -23,6 +23,15 @@ class UserCreate(UserBase):
 class ContractorCreate(SQLModel):
     email: EmailStr
     password: str
+    username: Optional[str] = None
+    full_name: Optional[str] = None
+    contractor_code: Optional[str] = None
+    mobile_number: Optional[str] = None
+    address: Optional[str] = None
+    gst_details: Optional[str] = None
+    status: Optional[UserStatus] = Field(default=UserStatus.ACTIVE)
+    profile_image: Optional[str] = None
+    govt_id: Optional[str] = None
 
 class UserRead(UserBase):
     id: int
