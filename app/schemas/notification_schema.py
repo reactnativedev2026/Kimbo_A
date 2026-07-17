@@ -7,6 +7,8 @@ class NotificationRead(SQLModel):
     user_id: int
     title: str
     message: str
+    notification_type: Optional[str] = None
+    related_id: Optional[int] = None
     is_read: bool
     created_at: datetime
 
@@ -20,6 +22,8 @@ class NotificationTestRequest(SQLModel):
     fcm_token: str
     title: str
     message: str
+    notification_type: Optional[str] = None
+    related_id: Optional[int] = None
 
 class NotificationTestResponse(SQLModel):
     status: str

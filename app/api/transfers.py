@@ -32,7 +32,9 @@ def create_transfer_admin(
         session,
         contractor.id,
         "Material Transfer Recorded",
-        f"A new material transfer has been recorded: {db_transfer.quantity} {db_transfer.unit} of {db_transfer.material_type}."
+        f"A new material transfer has been recorded: {db_transfer.quantity} {db_transfer.unit} of {db_transfer.material_type}.",
+        notification_type="transfer_new",
+        related_id=db_transfer.id
     )
     session.commit()
 

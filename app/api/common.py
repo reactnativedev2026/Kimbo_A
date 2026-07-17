@@ -364,7 +364,9 @@ def update_support_ticket_status(
             session,
             db_ticket.user_id,
             "Support Ticket Updated",
-            f"Your support ticket #{db_ticket.id} status has been updated to {payload.status}."
+            f"Your support ticket #{db_ticket.id} status has been updated to {payload.status}.",
+            notification_type="support_ticket",
+            related_id=db_ticket.id
         )
         session.commit()
     

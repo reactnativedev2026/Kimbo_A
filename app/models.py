@@ -204,6 +204,8 @@ class Notification(SQLModel, table=True):
     user_id: int = Field(foreign_key="user.id")
     title: str
     message: str
+    notification_type: Optional[str] = None
+    related_id: Optional[int] = None
     is_read: bool = Field(default=False)
     created_at: datetime = Field(default_factory=datetime.utcnow, sa_column=Column(DateTime, default=datetime.utcnow))
 

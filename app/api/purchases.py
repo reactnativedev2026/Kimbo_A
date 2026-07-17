@@ -70,7 +70,7 @@ def add_purchase_contractor(
         f"{purchase_data.quantity_bought} x {product_name}."
     )
     for admin in admin_users:
-        create_notification(session, admin.id, "New Purchase Request", notification_message)
+        create_notification(session, admin.id, "New Purchase Request", notification_message, notification_type="purchase_request", related_id=db_purchase.id)
     session.commit()
 
     return {
@@ -206,7 +206,7 @@ def update_purchase_status(
         if contractor:
             contractor.total_tokens += db_purchase.tokens_earned
             session.add(contractor)
-        create_notification(session, contractor.id, "Purchase Approved", f"Your purchase ID {db_purchase.id} has been approved. Tokens credited.")
+        create_notification(session, contractor.id, "Purchase Approved", f"Your purchase ID {db_purchase.id} has been approved. Tokens credited.", notification_type="purchase_status", related_id=db_purchase.id)
 
         product = session.get(Product, db_purchase.product_id)
         payment_method_str = (payment_method or db_purchase.payment_method or "Cash").upper()
@@ -223,7 +223,7 @@ def update_purchase_status(
         pdf_url = f"{str(request.base_url).rstrip('/')}/static/invoices/{invoice_file}"
     else:
         if contractor:
-            create_notification(session, contractor.id, "Purchase Status Updated", f"Your purchase ID {db_purchase.id} status changed to {status}.")
+            create_notification(session, contractor.id, "Purchase Status Updated", f"Your purchase ID {db_purchase.id} status changed to {status}.", notification_type="purchase_status", related_id=db_purchase.id)
 
     session.add(db_purchase)
     session.commit()

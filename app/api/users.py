@@ -206,7 +206,7 @@ def add_points_to_contractor(
     session.add(adjustment)
     # Send notification to contractor
     from app.utils.notifications import create_notification
-    create_notification(session, contractor_id, "Points Added", f"{request.points} points added by admin. {request.notes or ''}")
+    create_notification(session, contractor_id, "Points Added", f"{request.points} points added by admin. {request.notes or ''}", notification_type="points_added", related_id=adjustment.id)
     session.commit()
     session.refresh(contractor)
     return {

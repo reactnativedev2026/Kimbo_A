@@ -30,7 +30,9 @@ def create_scheme(
             session,
             contractor.id,
             "New Scheme Available!",
-            f"A new scheme '{db_scheme.title}' has been launched."
+            f"A new scheme '{db_scheme.title}' has been launched.",
+            notification_type="scheme_new",
+            related_id=db_scheme.id
         )
     if contractors:
         session.commit()

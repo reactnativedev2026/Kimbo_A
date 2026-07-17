@@ -76,7 +76,7 @@ def send_test_notification(
     current_user: User = Depends(get_current_user),
 ):
     """Send a test push notification directly to the provided FCM token."""
-    response = send_push_notification_to_token(payload.fcm_token, payload.title, payload.message)
+    response = send_push_notification_to_token(payload.fcm_token, payload.title, payload.message, payload.notification_type, payload.related_id)
     if response is None:
         return {
             "status": "failed",
@@ -95,7 +95,7 @@ def send_public_test_notification(
     payload: NotificationTestRequest
 ):
     """Send a test push notification publicly using an FCM token without requiring credentials."""
-    response = send_push_notification_to_token(payload.fcm_token, payload.title, payload.message)
+    response = send_push_notification_to_token(payload.fcm_token, payload.title, payload.message, payload.notification_type, payload.related_id)
     if response is None:
         return {
             "status": "failed",

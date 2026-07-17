@@ -4,17 +4,24 @@ from sqlmodel import Session, select
 from app.models import Notification, User, UserRole
 from firebase_admin import messaging
 
-def send_push_notification_to_token(token: str, title: str, message_content: str):
+def send_push_notification_to_token(token: str, title: str, message_content: str, notification_type: str = None, related_id: int = None):
     """Send an FCM push notification directly to the provided token."""
     if not token or not token.strip():
         return None
 
     try:
+        data_payload = {}
+        if notification_type:
+            data_payload["type"] = str(notification_type)
+        if related_id is not None:
+            data_payload["related_id"] = str(related_id)
+
         message = messaging.Message(
             notification=messaging.Notification(
                 title=title,
                 body=message_content,
             ),
+            data=data_payload if data_payload else None,
             token=token.strip()
         )
         response = messaging.send(message)
@@ -25,7 +32,7 @@ def send_push_notification_to_token(token: str, title: str, message_content: str
         return None
 
 
-def send_push_notification(session: Session, user_id: int, title: str, message_content: str):
+def send_push_notification(session: Session, user_id: int, title: str, message_content: str, notification_type: str = None, related_id: int = None):
     """Fetch user's fcm_token and trigger Firebase Push Notification."""
     user = session.get(User, user_id)
     if not user or not user.fcm_token or not user.fcm_token.strip():
@@ -33,11 +40,18 @@ def send_push_notification(session: Session, user_id: int, title: str, message_c
         return None
 
     try:
+        data_payload = {}
+        if notification_type:
+            data_payload["type"] = str(notification_type)
+        if related_id is not None:
+            data_payload["related_id"] = str(related_id)
+
         message = messaging.Message(
             notification=messaging.Notification(
                 title=title,
                 body=message_content,
             ),
+            data=data_payload if data_payload else None,
             token=user.fcm_token.strip()
         )
         response = messaging.send(message)
@@ -48,15 +62,21 @@ def send_push_notification(session: Session, user_id: int, title: str, message_c
         logging.error(f"Error sending push notification to user {user_id}: {e}")
         return None
 
-def create_notification(session: Session, user_id: int, title: str, message: str):
+def create_notification(session: Session, user_id: int, title: str, message: str, notification_type: str = None, related_id: int = None):
     """Create a notification for a specific user and add it to the session.
     The caller should commit the session after calling this function.
     """
-    notif = Notification(user_id=user_id, title=title, message=message)
+    notif = Notification(
+        user_id=user_id, 
+        title=title, 
+        message=message, 
+        notification_type=notification_type, 
+        related_id=related_id
+    )
     session.add(notif)
     
     # Send push notification
-    send_push_notification(session, user_id, title, message)
+    send_push_notification(session, user_id, title, message, notification_type, related_id)
     
     # Do not commit here; let the caller handle transaction.
     return notif

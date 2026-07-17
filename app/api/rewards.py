@@ -44,7 +44,9 @@ def request_redeem(
         session,
         current_user.id,
         "Reward Request Submitted",
-        f"Your request to redeem '{scheme.title}' has been submitted successfully."
+        f"Your request to redeem '{scheme.title}' has been submitted successfully.",
+        notification_type="reward_request",
+        related_id=db_redeem.id
     )
     session.commit()
 
@@ -88,7 +90,9 @@ def update_redeem_status(
         session,
         db_redeem.contractor_id,
         "Reward Request Updated",
-        f"Your reward request for '{db_redeem.reward_description}' has been {status}."
+        f"Your reward request for '{db_redeem.reward_description}' has been {status}.",
+        notification_type="reward_status",
+        related_id=db_redeem.id
     )
     session.commit()
 
