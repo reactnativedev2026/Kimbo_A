@@ -1,4 +1,9 @@
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
@@ -90,7 +95,20 @@ def seed_static_content():
 def init_firebase():
     import firebase_admin
     from firebase_admin import credentials
+    import json
     
+    firebase_json_str = os.getenv("FIREBASE_CREDENTIALS_JSON")
+    if firebase_json_str:
+        try:
+            if not firebase_admin._apps:
+                cred_dict = json.loads(firebase_json_str)
+                cred = credentials.Certificate(cred_dict)
+                firebase_admin.initialize_app(cred)
+                print("[FIREBASE] Initialized successfully using FIREBASE_CREDENTIALS_JSON environment variable.")
+            return
+        except Exception as e:
+            print(f"[FIREBASE] Error initializing Firebase from JSON env var: {e}")
+
     cred_path = os.getenv("FIREBASE_CREDENTIALS_PATH", "app/firebase-credentials.json")
     if not os.path.isabs(cred_path):
         if not os.path.exists(cred_path):
@@ -104,9 +122,9 @@ def init_firebase():
             if not firebase_admin._apps:
                 cred = credentials.Certificate(cred_path)
                 firebase_admin.initialize_app(cred)
-                print(f"[FIREBASE] Initialized successfully using: {cred_path}")
+                print(f"[FIREBASE] Initialized successfully using file: {cred_path}")
         except Exception as e:
-            print(f"[FIREBASE] Error initializing Firebase: {e}")
+            print(f"[FIREBASE] Error initializing Firebase from file: {e}")
     else:
         print(f"[FIREBASE] Credentials file not found at: {cred_path}. Push notifications will not work.")
 
