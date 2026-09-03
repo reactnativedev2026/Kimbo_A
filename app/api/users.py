@@ -3,7 +3,7 @@ import shutil
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Form, Query
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from sqlmodel import Session, select
+from sqlmodel import Session, select, or_
 from sqlalchemy import func
 from pydantic import BaseModel
 
@@ -123,9 +123,27 @@ def add_contractor(
 # -------------------- Authentication --------------------
 @router.post("/auth/login", response_model=UserLoginResponse)
 def login_user(login_data: UserLogin, session: Session = Depends(get_session)):
-    user = session.exec(select(User).where(User.email == login_data.email)).first()
+    # Extract login identifier (email, mobile number, or username)
+    login_id = login_data.email or login_data.mobile_number
+    if not login_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Email ya mobile number enter karna zaroori hai."
+        )
+    
+    login_id = login_id.strip()
+    user = session.exec(
+        select(User).where(
+            or_(
+                User.email == login_id,
+                User.mobile_number == login_id,
+                User.username == login_id
+            )
+        )
+    ).first()
+
     if not user or not verify_password(login_data.password, user.password):
-        raise HTTPException(status_code=401, detail="Invalid email or password")
+        raise HTTPException(status_code=401, detail="Invalid email/mobile number or password")
     if user.status != UserStatus.ACTIVE:
         raise HTTPException(status_code=403, detail="User account is inactive. Login denied.")
         

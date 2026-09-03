@@ -82,7 +82,8 @@ class UserLoginResponse(SQLModel):
     user_data: UserRead
     
 class UserLogin(SQLModel):
-    email: EmailStr
+    email: Optional[str] = None
+    mobile_number: Optional[str] = None
     password: str
     fcm_token: Optional[str] = None
     device_type: Optional[str] = None
